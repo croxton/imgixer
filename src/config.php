@@ -22,12 +22,24 @@
  * you do for 'general.php'
  */
 return [
-    // Imgix API key
-    'apiKey' => '',
+    'sources' => array(
 
-    // Volume handles mapped to Imgix domains
-    'imgixDomains' => [],
+        // A unique handle that you can reference in your templates.
+        'myHandle' => array(
 
-    // Imgix signed URLs token
-    'imgixSignedToken' => '',
+            // The imgix source domain.
+            'domain'   => '',
+
+            // Optionally specify a subfolder path to prefix generated URLs.
+            'subfolder' => '',
+
+            // The private Imgix key used to sign images.
+            // Get this from the source details screen in Imgix.com
+            'key'   => '',
+
+            // Define any default parameters here:
+            'defaultParams' => []
+        ),
+
+    )
 ];
