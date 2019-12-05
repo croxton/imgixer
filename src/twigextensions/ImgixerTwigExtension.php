@@ -73,7 +73,7 @@ class ImgixerTwigExtension extends \Twig_Extension
     /**
      * Returns an array of Twig filters, used in Twig templates via:
      *
-     *      {{ image.path | { ar:'1:1', from:400, to:1000 } }}
+     *      {{ image.path | imgix({ ar:'16:9', w:1024 }) }}
      *
      * @return array
      */
