@@ -11,7 +11,6 @@
 namespace croxton\imgixer\twigextensions;
 
 use croxton\imgixer\Imgixer;
-use croxton\imgixer\Plugin;
 use Imgix\UrlBuilder;
 use yii\base\InvalidArgumentException;
 
@@ -32,7 +31,7 @@ class ImgixerTwigExtension extends \Twig_Extension
 {
 
     /**
-     * An array of source URLs and signature keys
+     * An array of Imgix sources
      *
      * @var        array
      */
@@ -74,7 +73,7 @@ class ImgixerTwigExtension extends \Twig_Extension
     /**
      * Returns an array of Twig filters, used in Twig templates via:
      *
-     *      {{ 'something' | someFilter }}
+     *      {{ image.path | { ar:'1:1', from:400, to:1000 } }}
      *
      * @return array
      */
@@ -86,15 +85,29 @@ class ImgixerTwigExtension extends \Twig_Extension
     }
 
     /**
-     * Add/remove the value of query string parameter that accepts a single value
+     * Returns an array of Twig functions, used in Twig templates via:
      *
-     * @access public
+     *      {% set srcset = imgix(image.path, { ar:'1:1', from:400, to:1000 }) %}
+     *
+     * @return array
+     */
+    public function getFunctions()
+    {
+        return [
+            new \Twig\TwigFunction('imgix', [$this, 'imgix']),
+        ];
+    }
+
+    /**
+     * Build an Imgix URL
+     *
+     * @access protected
      * @param string $img The asset URL
      * @param array $params An array of Imgix parameters
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function buildUrl($img, $params=array())
+    protected function buildUrl($img, $params=array())
     {
         $signed  = isset($params['signed']) ? (bool) $params['signed'] : false;
         $source   = isset($params['source']) ? (string) $params['source'] : $this->default_source;
@@ -105,8 +118,8 @@ class ImgixerTwigExtension extends \Twig_Extension
         }
 
         // unless setup with a custom domain, imgix source urls take the form [source].imgix.net
-        if ( ! isset($this->sources[$source]['url'])) {
-            $this->sources[$source]['url'] = $source . '.imgix.net';
+        if ( ! isset($this->sources[$source]['domain'])) {
+            $this->sources[$source]['domain'] = $source . '.imgix.net';
         }
 
         // prefix img path with subfolder, if defined
@@ -123,7 +136,7 @@ class ImgixerTwigExtension extends \Twig_Extension
         }
 
         // build image URL
-        $builder = new UrlBuilder($this->sources[$source]['url']);
+        $builder = new UrlBuilder($this->sources[$source]['domain']);
         $builder->setUseHttps(true);
 
         if ($signed && isset($this->sources[$source]['key']) && ! empty($this->sources[$source]['key']))
@@ -135,7 +148,7 @@ class ImgixerTwigExtension extends \Twig_Extension
     }
 
     /**
-     * Add/remove the value of query string parameter that accepts a single value
+     * Generate src and srcset values, optionally for a range of image sizes
      *
      * @access public
      * @param string $img The asset URL
@@ -164,19 +177,5 @@ class ImgixerTwigExtension extends \Twig_Extension
         }
 
         return implode(',', $srcset);
-    }
-
-    /**
-     * Returns an array of Twig functions, used in Twig templates via:
-     *
-     *      {% set srcSet = imgix(image.path, { ar:'1:1', from:400, to:1000 }) %}
-     *
-    * @return array
-     */
-    public function getFunctions()
-    {
-        return [
-            new \Twig\TwigFunction('imgix', [$this, 'imgix']),
-        ];
     }
 }
