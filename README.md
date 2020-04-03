@@ -90,10 +90,10 @@ return [
 {{ image.path | imgix({ ar:'16:9', w:1024 }) }}
 
 {# ...or as a function. #}
-{{ set myImageSrc = imgix(image.path, { ar:'16:9', w:1024 }) }}
+{% set myImageSrc = imgix(image.path, { ar:'16:9', w:1024 }) %}
 
 {# Create a srcset by defining a range of widths using the `from`, `to` and `step` parameters #}
-{{ set myImageSrcset = imgix(image.path, { ar:'16:9', from: 300, to:1600, step:100 }) }}
+{% set myImageSrcset = imgix(image.path, { ar:'16:9', from: 300, to:1600, step:100 }) %}
 
 {# Creating signed images #}
 {{ image.path | imgix({ ar:'16:9', w:1024, signed: true }) }}
