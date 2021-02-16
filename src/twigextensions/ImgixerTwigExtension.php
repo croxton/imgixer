@@ -10,11 +10,12 @@
 
 namespace croxton\imgixer\twigextensions;
 
+use Craft;
+use craft\elements\Asset;
 use croxton\imgixer\Imgixer;
 use Imgix\UrlBuilder;
 use yii\base\InvalidArgumentException;
 
-use Craft;
 
 /**
  * Twig can be extended in many ways; you can add extra tags, filters, tests, operators,
@@ -102,15 +103,14 @@ class ImgixerTwigExtension extends \Twig_Extension
      * Build an Imgix URL
      *
      * @access protected
-     * @param string $img The asset URL
+     * @param string|Asset $asset The asset URL
      * @param array $params An array of Imgix parameters
      * @return string
      * @throws \InvalidArgumentException
      */
-    protected function buildUrl($img, $params=array())
+    protected function buildUrl($asset, $params=array())
     {
-        $signed  = isset($params['signed']) ? (bool) $params['signed'] : false;
-        $source   = isset($params['source']) ? (string) $params['source'] : $this->default_source;
+        $source  = isset($params['source']) ? (string) $params['source'] : $this->default_source;
 
         // handle snafus
         if ( ! isset($this->sources[$source])) {
@@ -122,9 +122,27 @@ class ImgixerTwigExtension extends \Twig_Extension
             $this->sources[$source]['domain'] = $source . '.imgix.net';
         }
 
+        // image path
+        $img = $asset;
+        if ( ! is_string($asset) && $asset instanceof Asset) {
+            $img = $asset->path;
+            // when an image has been modified, ensure a new imgix version is generated
+            $params['mtime'] = $asset->dateModified->getTimestamp();
+        }
+
         // prefix img path with subfolder, if defined
         if ( isset($this->sources[$source]['subfolder'])) {
             $img = $this->sources[$source]['subfolder'] .'/'. $img;
+        } elseif ( ! is_string($asset) && $asset instanceof Asset) {
+            $volume = $asset->getVolume();
+            $img = ltrim($volume->subfolder . '/' . $img, '/');
+        }
+
+        // sign the image?
+        if ( isset($params['signed'])) {
+            $signed  = (bool) $params['signed'];
+        } else {
+            $signed  = isset($this->sources[$source]['signed']) ? (bool) $this->sources[$source]['signed'] : false;
         }
 
         // cleanup params

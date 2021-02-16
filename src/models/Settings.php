@@ -6,12 +6,14 @@ use craft\base\Model;
 
 class Settings extends Model
 {
-    public  $sources= array();
+    public $sources= array();
+    public $transformSource = null;
 
     public function rules()
     {
         return [
-            [['sources'], 'required']
+            [['sources'], 'required'],
+            [['transformSource']],
         ];
     }
 }

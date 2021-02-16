@@ -10,12 +10,16 @@
 
 namespace croxton\imgixer;
 
-use croxton\imgixer\twigextensions\ImgixerTwigExtension;
-
 use Craft;
 use craft\base\Plugin;
 use craft\services\Plugins;
 use craft\events\PluginEvent;
+use craft\events\GetAssetUrlEvent;
+use craft\events\GetAssetThumbUrlEvent;
+use craft\services\Assets;
+
+use croxton\imgixer\twigextensions\ImgixerTwigExtension;
+use croxton\imgixer\services\UrlService;
 
 use yii\base\Event;
 
@@ -79,6 +83,11 @@ class Imgixer extends Plugin
         // Add in our Twig extensions
         Craft::$app->view->registerTwigExtension(new ImgixerTwigExtension());
 
+        // Add our URL service
+        $this->setComponents([
+            'urlService' => UrlService::class,
+        ]);
+
         // Do something after we're installed
         Event::on(
             Plugins::class,
@@ -89,6 +98,29 @@ class Imgixer extends Plugin
                 }
             }
         );
+
+        // Replace transforms?
+        if ($this->settings->transformSource !== null) {
+
+            // Handler: Assets::EVENT_GET_ASSET_URL
+            Event::on(
+                Assets::class,
+                Assets::EVENT_GET_ASSET_URL,
+                function (GetAssetUrlEvent $event) {
+                    $event->url = $this->urlService->getUrl($event->asset, $event->transform);
+                }
+            );
+
+            // Handler: Assets::EVENT_GET_ASSET_THUMB_URL
+            Event::on(
+                Assets::class,
+                Assets::EVENT_GET_ASSET_THUMB_URL,
+                function (GetAssetThumbUrlEvent $event) {
+                    $event->url = $this->urlService->getThumbUrl($event);
+                }
+            );
+
+        }
 
 /**
  * Logging in Craft involves using one of the following methods:

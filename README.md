@@ -1,6 +1,6 @@
 # Imgixer plugin for Craft CMS 3.x
 
-Generate Imgix URLs.
+Generate Imgix URLs. Optionally, speed up your templates and control panel by swapping Craft's native image transforms with Imgix rendering.
 
 ![Screenshot](resources/img/plugin-logo.png)
 
@@ -47,6 +47,9 @@ return [
             // Get this from the source details screen in Imgix.com
             'key'   => '12345',
             
+            // Set to true if you want images to be signed with your key.
+            'signed'    => true,
+            
             // Define any default parameters here:
             'defaultParams' => array(
                 'auto' => 'compress,format',
@@ -59,6 +62,7 @@ return [
             'domain'   => 'another-domain.imgix.net',
             'subfolder' => 'hero',
             'key'   => '12345',
+            'signed'    => true,
             'defaultParams' => array(
                 'auto' => 'compress,format',
                 'fit' => 'crop',
@@ -70,12 +74,24 @@ return [
             'domain'   => 'another-domain.imgix.net',
             'subfolder' => 'portraits',
             'key'   => '12345',
+            'signed'    => true,
             'defaultParams' => array(
                 'auto' => 'compress,format,enhance,redeye',
                 'fit' => 'facearea',
                 'ar' => '3:4'
             )
         ),
+        
+        // Optionally, define a source to use in place of Craft's native image transforms. This will be used for all transforms used in your templates and in the control panel.
+        'assetTransforms' => array(
+            'domain'    => 'my-domain.imgix.net',
+            'key'       => '12345',
+            'signed'    => true
+        ),
+        
+        // Set this to the source you want to use for image transforms 
+        'transformSource' => 'assetTransforms'
+        
     )
 ];
 ```
@@ -90,10 +106,13 @@ return [
 {{ image.path | imgix({ ar:'16:9', w:1024 }) }}
 
 {# ...or as a function. #}
-{% set myImageSrc = imgix(image.path, { ar:'16:9', w:1024 }) %}
+{{ set myImageSrc = imgix(image.path, { ar:'16:9', w:1024 }) }}
+
+{# Optionally, pass an asset instead of an image path. In this case the Imgix URL will include a mtime= parameter to automatically generate a new transform when the asset is edited. #}
+{{ set myImageSrc = imgix(image, { ar:'16:9', w:1024 }) }}
 
 {# Create a srcset by defining a range of widths using the `from`, `to` and `step` parameters #}
-{% set myImageSrcset = imgix(image.path, { ar:'16:9', from: 300, to:1600, step:100 }) %}
+{{ set myImageSrcset = imgix(image.path, { ar:'16:9', from: 300, to:1600, step:100 }) }}
 
 {# Creating signed images #}
 {{ image.path | imgix({ ar:'16:9', w:1024, signed: true }) }}
