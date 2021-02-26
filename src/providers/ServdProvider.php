@@ -60,30 +60,13 @@ class ServdProvider extends AbstractProvider
         // Get the volume
         $volume = $asset->getVolume();
 
-        // merge any default params
+        // Merge any default params
         if ( isset($source['defaultParams'])) {
             $params = array_merge($source['defaultParams'], $params);
         }
 
-        // if 'ar' param set and either 'h' or 'w',
-        // calculate the corresponding dimension if it is missing
-        if (isset($params['ar'])) {
-            $ar = 0;
-            $ar = array_map('intval', explode(':', $params['ar']));
-            if ( isset($ar[0]) && isset($ar[1])) {
-                $ar = $ar[0]/$ar[1];
-            }
-            if ($ar > 0) {
-                if ( isset($params['w']) && ! isset($params['h']) ) {
-                    $params['h'] = intval($params['w']) / $ar;
-                } elseif ( isset($params['h']) && ! isset($params['w']) ) {
-                    $params['w'] = intval($params['h']) * $ar;
-                }
-            }
-        }
-
         // Only allow params supported by Servd
-        $allowedParams = array_flip(array('w', 'h', 'q', 'fm', 'auto', 'fit', 'crop', 'fp-x', 'fp-y', 'fill-color', 'dpr', 'dm'));
+        $allowedParams = array_flip(array('w', 'h', 'q', 'fm', 'auto', 'fit', 'crop', 'fp-x', 'fp-y', 'fill-color', 'dpr', 'ar', 'dm'));
         $params = array_intersect_key($params, $allowedParams);
 
         // Full path of asset on the CDN platform
@@ -129,7 +112,7 @@ class ServdProvider extends AbstractProvider
      */
     protected function servdImgixUrl($source, Asset $asset, $params) {
 
-        // Get the full path to the iamhe
+        // Get the full path to the image
         $img = $asset->path;
         $volume = $asset->getVolume();
         $img = ltrim(trim($volume->subfolder, '/') . '/' . $img, '/');

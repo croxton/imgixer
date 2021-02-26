@@ -1,6 +1,10 @@
 # Imgixer plugin for Craft CMS 3.x
 
-Generate Imgix URLs. Optionally, speed up your templates and control panel by swapping Craft's native image transforms with Imgix rendering.
+The most flexible Imgix URL generator for Craft CMS.
+
+* Generate Imgix URLs with convenient methods for responsive images.
+* *New*: Speed up your templates and control panel by swapping Craft's native image transforms with Imgix rendering.
+* *New*: [Servd.host](https://servd.host) users - use Servd's built-in image transforms instead of Imgix.
 
 ![Screenshot](resources/img/plugin-logo.png)
 
@@ -157,9 +161,9 @@ return [
 ```
 ## Using Imgixer with Servd.host asset sources
 
-There are several ways to use Imgixer with Servd.host asset sources, and benefit from Servd's automatic environment prefixing environment (generated URLs will be prefixed with `local`, `staging` or `production`). 
+There are several ways to use Imgixer with [Servd.host](https://servd.host) asset sources, and benefit from Servd's automatic environment prefixing (generated URLs are prefixed with `local`, `staging` or `production`). 
 
-In both cases please first install [Servd Assets and Helpers](https://github.com/servdhost/craft-asset-storage).
+With either option, you will first need to install [Servd Assets and Helpers](https://github.com/servdhost/craft-asset-storage).
 
 ### 1. Using an Imgix Web Folder source
   
@@ -185,7 +189,7 @@ In both cases please first install [Servd Assets and Helpers](https://github.com
 
 ### 2. Use Servd's own image transformation service
 
-Servd provides it's own transformation service that supports a subset of Imgix's image transformation features, that nonetheless covers most use cases. This does NOT require an Imgix account, but note that it does consume the Servd resources allocated to your plan.
+Servd provides it's own image transformation service that supports a subset of Imgix's image transformation features, that nonetheless covers most use cases. This does NOT require an Imgix account, but note that it does consume the Servd resources allocated to your plan.
 
 Create a source in `imgixer.php` config, adding `servd` as the asset provider. Do not set a domain:
 
