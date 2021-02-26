@@ -45,6 +45,14 @@ class ImgixerTwigExtension extends \Twig_Extension
      */
     private $default_source;
 
+
+    /**
+     * The default provider to use
+     *
+     * @var        string
+     */
+    private $default_provider;
+
     /**
      * Constructor
      *
@@ -55,6 +63,7 @@ class ImgixerTwigExtension extends \Twig_Extension
         // get from config
         $this->sources = \croxton\imgixer\Imgixer::getInstance()->settings->sources;
         $this->default_source = key($this->sources); // default to the first source defined
+        $this->default_provider = 'imgix'; // the default image transformation service provider
     }
 
 
@@ -100,79 +109,12 @@ class ImgixerTwigExtension extends \Twig_Extension
     }
 
     /**
-     * Build an Imgix URL
-     *
-     * @access protected
-     * @param string|Asset $asset The asset URL
-     * @param array $params An array of Imgix parameters
-     * @return string
-     * @throws \InvalidArgumentException
-     */
-    protected function buildUrl($asset, $params=array())
-    {
-        $source  = isset($params['source']) ? (string) $params['source'] : $this->default_source;
-
-        // handle snafus
-        if ( ! isset($this->sources[$source])) {
-            throw new \InvalidArgumentException('The `' .$source . '` Imgix source is not defined in your config.');
-        }
-
-        // unless setup with a custom domain, imgix source urls take the form [source].imgix.net
-        if ( ! isset($this->sources[$source]['domain'])) {
-            $this->sources[$source]['domain'] = $source . '.imgix.net';
-        }
-
-        // image path
-        $img = $asset;
-        if ( ! is_string($asset) && $asset instanceof Asset) {
-            $img = $asset->path;
-            // when an image has been modified, ensure a new imgix version is generated
-            $params['mtime'] = $asset->dateModified->getTimestamp();
-        }
-
-        // prefix img path with subfolder, if defined
-        if ( isset($this->sources[$source]['subfolder'])) {
-            $img = $this->sources[$source]['subfolder'] .'/'. $img;
-        } elseif ( ! is_string($asset) && $asset instanceof Asset) {
-            $volume = $asset->getVolume();
-            $img = ltrim($volume->subfolder . '/' . $img, '/');
-        }
-
-        // sign the image?
-        if ( isset($params['signed'])) {
-            $signed  = (bool) $params['signed'];
-        } else {
-            $signed  = isset($this->sources[$source]['signed']) ? (bool) $this->sources[$source]['signed'] : false;
-        }
-
-        // cleanup params
-        unset($params['signed'], $params['source']);
-
-        // merge any default params
-        if ( isset($this->sources[$source]['defaultParams'])) {
-            $params = array_merge($this->sources[$source]['defaultParams'], $params);
-        }
-
-        // build image URL
-        $builder = new UrlBuilder($this->sources[$source]['domain']);
-        $builder->setUseHttps(true);
-
-        if ($signed && isset($this->sources[$source]['key']) && ! empty($this->sources[$source]['key']))
-        {
-            $builder->setSignKey($this->sources[$source]['key']);
-        }
-
-        return $builder->createURL($img, $params);
-    }
-
-    /**
      * Generate src and srcset values, optionally for a range of image sizes
      *
      * @access public
      * @param string $img The asset URL
      * @param array $params An array of Imgix parameters
      * @return string
-     * @throws \InvalidArgumentException
      */
     public function imgix($img, $params=array())
     {
@@ -195,5 +137,31 @@ class ImgixerTwigExtension extends \Twig_Extension
         }
 
         return implode(',', $srcset);
+    }
+
+    /**
+     * Build an image transform URL
+     *
+     * @access protected
+     * @param string|Asset $asset The asset URL
+     * @param array $params An array of Imgix parameters
+     * @return string|null
+     * @throws \InvalidArgumentException
+     */
+    protected function buildUrl($asset, $params=array())
+    {
+        // Source
+        $source  = isset($params['source']) ? (string) $params['source'] : $this->default_source;
+        if ( ! isset($this->sources[$source])) {
+            throw new \InvalidArgumentException('The `' .$source . '` Imgix source is not defined in your config.');
+        }
+        $this->sources[$source]['handle'] = $source;
+
+        // Provider
+        $provider  = isset($this->sources[$source]['provider']) ? (string) $this->sources[$source]['provider'] : $this->default_provider;
+        $providerClass = '\croxton\imgixer\providers\\' . ucfirst($provider) .'Provider';
+
+        // Build URL using the selected provider
+        return (new $providerClass())->getUrl($this->sources[$source], $asset, $params);
     }
 }
