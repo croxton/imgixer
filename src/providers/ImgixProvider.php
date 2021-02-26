@@ -11,9 +11,9 @@ use Imgix\UrlBuilder;
 class ImgixProvider extends AbstractProvider
 {
     /**
-     * Generate a URL
+     * Generate a standard Imgix URL
      *
-     * @access protected
+     * @access public
      * @param array $source The source config array
      * @param string|Asset $asset The asset URL
      * @param array $params An array of parameters

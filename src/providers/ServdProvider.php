@@ -13,7 +13,7 @@ class ServdProvider extends AbstractProvider
     /**
      * Generate a URL
      *
-     * @access protected
+     * @access public
      * @param array $source The source config array
      * @param string|Asset $asset The asset URL
      * @param array $params An array of parameters
@@ -41,9 +41,9 @@ class ServdProvider extends AbstractProvider
     }
 
     /**
-     * Generate src and srcset values, optionally for a range of image sizes
+     * Generate an image transform URL using Servd's transform service
      *
-     * @access public
+     * @access protected
      * @param array $source The source config array
      * @param Asset $asset The asset
      * @param array $params An array of parameters
@@ -102,9 +102,9 @@ class ServdProvider extends AbstractProvider
     }
 
     /**
-     * Generate src and srcset values, optionally for a range of image sizes
+     * Generate an Imgix URL, prefixed with the Servd environment
      *
-     * @access public
+     * @access protected
      * @param array $source The source config array
      * @param Asset $asset The asset
      * @param array $params An array of parameters

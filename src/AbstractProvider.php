@@ -25,9 +25,9 @@ abstract class AbstractProvider
     protected $params;
 
     /**
-     * Generate a URL
+     * Generate a URL for the provider
      *
-     * @access protected
+     * @access public
      * @param array $source The source config array
      * @param string|Asset $asset The asset URL
      * @param array $params An array of parameters
@@ -39,6 +39,7 @@ abstract class AbstractProvider
     /**
      * Build an Imgix URL
      *
+     * @access protected
      * @param string $domain The Imgix source domain
      * @param string $img The image path
      * @param array $params An array of Imgix parameters
