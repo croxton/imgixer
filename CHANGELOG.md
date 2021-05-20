@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## 1.0.2 - 2021-16-01
+## 1.0.2 - 2021-20-05
+- Released.
+
+## 1.0.2-beta.3 - 2021-26-02
+### Added
+- Support for using Servd's image transform service.
+
+### Changed
+- Changed the timestamp parameter appended to image URLs from `mtime=` to `dm=`.
+
+## 1.0.2-beta.2 - 2021-16-01
 ### Added
 - Optionally replace Craft's native image transforms with Imgix.
 - Pass assets directly to Imgixer, as well as image paths / urls.
