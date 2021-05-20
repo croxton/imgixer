@@ -1,6 +1,6 @@
 # Imgixer plugin for Craft CMS 3.x
 
-The most flexible Imgix URL generator for Craft CMS.
+The most flexible [Imgix](https://imgix.com/) URL generator for Craft CMS.
 
 * Generate Imgix URLs with convenient methods for responsive images.
 * *New*: Speed up your templates and control panel by swapping Craft's native image transforms with Imgix rendering.
@@ -31,7 +31,7 @@ To install the plugin, follow these instructions.
 
 Copy `config.php` into Crafts `config` folder and rename it to `imgixer.php`. 
 
-Define each source with a unique handle as follows. Note that the same Imgix source domain may be referenced more than once, which can be useful if you want to use a different set of default parameters for images in a particular Asset volume, or an arbitrary grouping of images with similar characteristics, or if you have defined your Imgix source as a web proxy and need to reference multiple domains.
+Define each source with a unique handle. The same Imgix source domain may be referenced more than once, which can be useful if you want to use a different set of default parameters for images in a particular Asset volume, or an arbitrary grouping of images with similar characteristics, or if you have defined your Imgix source as a web proxy and need to reference multiple domains.
 
 ```php
 <?php
@@ -118,14 +118,14 @@ return [
 {{ set myImageSrc = imgix(image.path, { ar:'16:9', w:1024 }) }}
 
 {# Create a srcset by defining a range of widths using the `from`, `to` and `step` parameters #}
-{{ set myImageSrcset = imgix(image, { ar:'16:9', from: 300, to:1600, step:100 }) }}
+{{ set myImageSrcset = imgix(image, { ar:'16:9', from:300, to:1600, step:100 }) }}
 
 {# Specify a source handle (by default, Imgixer uses the first source you defined in the config) #}
-{{ image | imgix({ ar:'16:9', w:1024, source: 'heroBanners' }) }}
+{{ image | imgix({ ar:'16:9', w:1024, source:'heroBanners' }) }}
 
 {# Example of a responsive <img> #}
 <img
-  srcset="{{ image | imgix({ ar:'16:9', from:640, to:1600, step:160 }) }}">
+  srcset="{{ image | imgix({ ar:'16:9', from:640, to:1600, step:160 }) }}"
   src="{{ image | imgix({ ar:'16:9', w:1024 }) }}"
   alt="">
 
@@ -186,7 +186,7 @@ With either option, you will first need to install [Servd Assets and Helpers](ht
 
 ### 2. Use Servd's own image transformation service
 
-Servd provides it's own image transformation service that supports a subset of Imgix's Rendering API, that nonetheless covers most use cases. This does NOT require an Imgix account, but note that it does consume the Servd resources allocated to your plan.
+Servd provides its own image transformation service that supports a subset of Imgix's Rendering API, that nonetheless covers most use cases. This does NOT require an Imgix account, but note that it does consume the Servd resources allocated to your plan.
 
 Create a source in `imgixer.php` config, adding `servd` as the asset provider. Do not set a domain:
 
