@@ -120,15 +120,12 @@ return [
 {# Create a srcset by defining a range of widths using the `from`, `to` and `step` parameters #}
 {{ set myImageSrcset = imgix(image, { ar:'16:9', from: 300, to:1600, step:100 }) }}
 
-{# Creating signed images #}
-{{ image | imgix({ ar:'16:9', w:1024, signed: true }) }}
-
 {# Specify a source handle (by default, Imgixer uses the first source you defined in the config) #}
 {{ image | imgix({ ar:'16:9', w:1024, source: 'heroBanners' }) }}
 
 {# Example of a responsive <img> #}
 <img
-  srcset="{{ image | imgix({ ar:'16:9', from:640, to:1536, step:160 }) }}">
+  srcset="{{ image | imgix({ ar:'16:9', from:640, to:1600, step:160 }) }}">
   src="{{ image | imgix({ ar:'16:9', w:1024 }) }}"
   alt="">
 
@@ -139,13 +136,13 @@ return [
     <source
       media="(min-width: 768px)"
       sizes="100vw"
-      srcset="{{ image | imgix({ ar:'21:9', from: 768, to:3168, step:160 }) }}">
+      srcset="{{ image | imgix({ ar:'21:9', from:800, to:3200, step:160 }) }}">
 
     <!-- 16:9 -->
     <source
       media="(min-width: 640px)"
       sizes="100vw"
-      srcset="{{ image | imgix({ ar:'16:9', from:640, to:1536, step:160 }) }}">
+      srcset="{{ image | imgix({ ar:'16:9', from:640, to:1600, step:160 }) }}">
 
     <!-- 3:2 -->
     <source
@@ -171,7 +168,7 @@ With either option, you will first need to install [Servd Assets and Helpers](ht
 
 * Recommended: tick the option to use secure URLs and make a note of the key.
   
-* Create a source in `imgixer.php` config, adding `servd` as the asset provider:
+* Create a source in `imgixer.php` config, adding `servd` as the asset transform provider:
 
 ```php
 'my-servd-web-folder' => array(
@@ -189,7 +186,7 @@ With either option, you will first need to install [Servd Assets and Helpers](ht
 
 ### 2. Use Servd's own image transformation service
 
-Servd provides it's own image transformation service that supports a subset of Imgix's image transformation features, that nonetheless covers most use cases. This does NOT require an Imgix account, but note that it does consume the Servd resources allocated to your plan.
+Servd provides it's own image transformation service that supports a subset of Imgix's Rendering API, that nonetheless covers most use cases. This does NOT require an Imgix account, but note that it does consume the Servd resources allocated to your plan.
 
 Create a source in `imgixer.php` config, adding `servd` as the asset provider. Do not set a domain:
 
