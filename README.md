@@ -88,17 +88,17 @@ return [
             )
         ),
         
-        // Optional: define a source to use in place of Craft's native image transforms. This will be used for all transforms used in your templates and in the control panel.
+        // Optional: define a source to use in place of Craft's native image transforms. 
+        // This will be used for all transforms used in your templates and in the control panel.
         'assetTransforms' => array(
             'domain'    => 'my-domain.imgix.net',
             'key'       => '12345',
             'signed'    => true
         ),
-        
-        // Optional: set this to the source you want to use for image transforms 
-        'transformSource' => 'assetTransforms'
-        
-    )
+    ),
+
+    // Optional: set this to the source you want to use in place of Craft's native image transforms. 
+    'transformSource' => 'assetTransforms'
 ];
 ```
 
