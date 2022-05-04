@@ -9,7 +9,7 @@ class Settings extends Model
     public $sources= array();
     public $transformSource = null;
 
-    public function rules()
+    public function rules(): array
     {
         return [
             [['sources'], 'required'],

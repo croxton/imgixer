@@ -11,6 +11,7 @@
 namespace croxton\imgixer;
 
 use Craft;
+use craft\base\Model;
 use craft\base\Plugin;
 use craft\services\Plugins;
 use craft\events\PluginEvent;
@@ -59,7 +60,7 @@ class Imgixer extends Plugin
      *
      * @var string
      */
-    public $schemaVersion = '1.0.0';
+    public string $schemaVersion = '1.0.0';
 
     // Public Methods
     // =========================================================================
@@ -105,8 +106,8 @@ class Imgixer extends Plugin
             // Handler: Assets::EVENT_GET_ASSET_URL
             Event::on(
                 Assets::class,
-                Assets::EVENT_GET_ASSET_URL,
-                function (GetAssetUrlEvent $event) {
+                \craft\elements\Asset::EVENT_DEFINE_URL,
+                function (\craft\events\DefineAssetUrlEvent $event) {
                     $event->url = $this->urlService->getUrl($event->asset, $event->transform);
                 }
             );
@@ -115,7 +116,7 @@ class Imgixer extends Plugin
             Event::on(
                 Assets::class,
                 Assets::EVENT_GET_ASSET_THUMB_URL,
-                function (GetAssetThumbUrlEvent $event) {
+                function (\craft\events\DefineAssetThumbUrlEvent $event) {
                     $event->url = $this->urlService->getThumbUrl($event);
                 }
             );
@@ -153,7 +154,7 @@ class Imgixer extends Plugin
     // Protected Methods
     // =========================================================================
 
-    protected function createSettingsModel()
+    protected function createSettingsModel(): ?Model
     {
         return new \croxton\imgixer\models\Settings();
     }

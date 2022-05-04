@@ -15,6 +15,7 @@ use craft\elements\Asset;
 use croxton\imgixer\Imgixer;
 use Imgix\UrlBuilder;
 use yii\base\InvalidArgumentException;
+use Twig\Extension\AbstractExtension;
 
 
 /**
@@ -28,7 +29,7 @@ use yii\base\InvalidArgumentException;
  * @package   Imgixer
  * @since     1.0.0
  */
-class ImgixerTwigExtension extends \Twig_Extension
+class ImgixerTwigExtension extends AbstractExtension
 {
 
     /**

@@ -75,11 +75,11 @@ class UrlService extends Component
     }
 
     /**
-     * @param GetAssetThumbUrlEvent $event
+     * @param \craft\events\DefineAssetThumbUrlEvent $event
      *
      * @return string|null
      */
-    public function getThumbUrl(GetAssetThumbUrlEvent $event)
+    public function getThumbUrl(\craft\events\DefineAssetThumbUrlEvent $event)
     {
         $url = $event->url;
         $asset = $event->asset;

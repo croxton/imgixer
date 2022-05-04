@@ -2,7 +2,7 @@
     "name": "croxton/imgixer",
     "description": "Generate Imgix URLs.",
     "type": "craft-plugin",
-    "version": "1.0.2",
+    "version": "2.0.0-beta.1",
     "keywords": [
         "craft",
         "cms",
@@ -13,7 +13,8 @@
     ],
     "support": {
         "docs": "https://github.com/croxton/imgixer/blob/master/README.md",
-        "issues": "https://github.com/croxton/imgixer/issues"
+        "issues": "https://github.com/croxton/imgixer/issues",
+        "source": "https://github.com/croxton/imgixer"
     },
     "license": "MIT",
     "authors": [
@@ -23,7 +24,7 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^3.0.0",
+        "craftcms/cms": "^4.0",
         "imgix/imgix-php": "~3.1.0"
     },
     "autoload": {
