@@ -1,4 +1,4 @@
-# Imgixer plugin for Craft CMS 3.x
+# Imgixer plugin for Craft CMS 4.x
 
 The most flexible [Imgix](https://imgix.com/) URL generator for Craft CMS.
 
@@ -10,7 +10,7 @@ The most flexible [Imgix](https://imgix.com/) URL generator for Craft CMS.
 
 ## Requirements
 
-This plugin requires Craft CMS 3.0.0-beta.23 or later.
+This plugin requires Craft CMS 4.0.0 or later.
 
 ## Installation
 
