@@ -115,7 +115,7 @@ class Imgixer extends Plugin
             // Handler: Assets::EVENT_GET_ASSET_THUMB_URL
             Event::on(
                 Assets::class,
-                Assets::EVENT_GET_ASSET_THUMB_URL,
+                Assets::EVENT_DEFINE_THUMB_URL,
                 function (\craft\events\DefineAssetThumbUrlEvent $event) {
                     $event->url = $this->urlService->getThumbUrl($event);
                 }

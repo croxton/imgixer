@@ -4,6 +4,7 @@ namespace croxton\imgixer\providers;
 
 use Craft;
 use craft\elements\Asset;
+use craft\helpers\App;
 use croxton\imgixer\Imgixer;
 use croxton\imgixer\AbstractProvider;
 use Imgix\UrlBuilder;
@@ -57,8 +58,8 @@ class ServdProvider extends AbstractProvider
         }
         $imageTransforms = new \servd\AssetStorage\AssetsPlatform\ImageTransforms;
 
-        // Get the volume
-        $volume = $asset->getVolume();
+        // Get the filesystem
+        $fs = $asset->getVolume()->getFs();
 
         // Merge any default params
         if ( isset($source['defaultParams'])) {
@@ -79,14 +80,16 @@ class ServdProvider extends AbstractProvider
         $signingKey = $imageTransforms->getKeyForPath($fullPath);
         $params['s'] = $signingKey;
 
+        $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
+
         // Use a custom URL template if one has been provided
-        $customPattern = Craft::parseEnv($volume->optimiseUrlPattern);
+        $customPattern = App::parseEnv($fs->optimiseUrlPattern);
         if (!empty($customPattern)) {
             $settings = \servd\AssetStorage\Plugin::getInstance()->getSettings();
             $variables = [
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
-                "subfolder" => trim($volume->customSubfolder, "/"),
+                "subfolder" => trim($normalizedCustomSubfolder, "/"),
                 "filePath" => $asset->getPath(),
                 "params" => '?' . http_build_query($params),
             ];
@@ -115,7 +118,7 @@ class ServdProvider extends AbstractProvider
         // Get the full path to the image
         $img = $asset->path;
         $volume = $asset->getVolume();
-        $img = ltrim(trim($volume->subfolder, '/') . '/' . $img, '/');
+        $img = ltrim(trim($volume->getFs()->subfolder, '/') . '/' . $img, '/');
 
         // Sign the image?
         if ( isset($params['signed'])) {

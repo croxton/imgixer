@@ -18,7 +18,7 @@ use craft\helpers\Assets;
 use craft\helpers\UrlHelper;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Image;
-use craft\models\AssetTransform;
+use craft\models\ImageTransform;
 use craft\events\GetAssetThumbUrlEvent;
 
 use croxton\imgixer\models\SettingsModel;
@@ -86,7 +86,7 @@ class UrlService extends Component
         $assetExt = $asset->getExtension();
 
         if (Image::canManipulateAsImage($assetExt)) {
-            $transform = new AssetTransform([
+            $transform = new ImageTransform([
                 'width' => $event->width,
                 'height' => $event->height,
                 'interlace' => 'line',
