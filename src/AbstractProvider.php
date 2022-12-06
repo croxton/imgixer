@@ -35,28 +35,4 @@ abstract class AbstractProvider
      * @throws \InvalidArgumentException
      */
     abstract public function getUrl($source, $asset, $params);
-
-    /**
-     * Build an Imgix URL
-     *
-     * @access protected
-     * @param string $domain The Imgix source domain
-     * @param string $img The image path
-     * @param array $params An array of Imgix parameters
-     * @param string|null $key An optional key used to sign images
-     * @return string
-     */
-    protected function buildImgixUrl($domain, $img, $params=array(), $key=null)
-    {
-        // build image URL
-        $builder = new UrlBuilder($domain);
-        $builder->setUseHttps(true);
-
-        if ($key !== null)
-        {
-            $builder->setSignKey($key);
-        }
-
-        return $builder->createURL($img, $params);
-    }
 }

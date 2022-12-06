@@ -160,6 +160,11 @@ class ImgixerTwigExtension extends AbstractExtension
 
         // Provider
         $provider  = isset($this->sources[$source]['provider']) ? (string) $this->sources[$source]['provider'] : $this->default_provider;
+
+        // Legacy - if provider is Servd but using an Imgix domain, we can safely use the Imgix provider
+        if ($provider === 'servd' && isset($this->sources[$source]['domain'])) {
+            $provider = 'imgix';
+        }
         $providerClass = '\croxton\imgixer\providers\\' . ucfirst($provider) .'Provider';
 
         // Build URL using the selected provider

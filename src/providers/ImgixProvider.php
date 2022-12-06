@@ -58,6 +58,11 @@ class ImgixProvider extends AbstractProvider
             $params = array_merge($source['defaultParams'], $params);
         }
 
+        // Map the formatting of a standard/basic set of parameters to Imagekit
+        if (isset($params['fit']) && $params['fit'] === 'fill' && !isset($params['fill-color']) ) {
+            $params['fill-color'] = '#FFF';
+        }
+
         // Sign key
         $key = null;
         if ($signed && isset($source['key']) && ! empty($source['key']))
@@ -67,5 +72,28 @@ class ImgixProvider extends AbstractProvider
 
         // Build Imgix URL
         return $this->buildImgixUrl($source['domain'], $img, $params, $key);
+    }
+
+    /**
+     * Build an Imgix URL
+     *
+     * @access protected
+     * @param string $domain The Imgix source domain
+     * @param string $img The image path
+     * @param array $params An array of Imgix parameters
+     * @param string|null $key An optional key used to sign images
+     * @return string
+     */
+    protected function buildImgixUrl($domain, $img, $params=array(), $key=null) {
+        // build image URL
+        $builder = new UrlBuilder($domain);
+        $builder->setUseHttps(true);
+
+        if ($key !== null)
+        {
+            $builder->setSignKey($key);
+        }
+
+        return $builder->createURL($img, $params);
     }
 }

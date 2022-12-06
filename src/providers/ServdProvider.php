@@ -31,14 +31,8 @@ class ServdProvider extends AbstractProvider
         // Add timestamp
         $params['dm'] = $asset->dateUpdated->getTimestamp();
 
-        // Check we have a domain
-        if ( isset($source['domain'])) {
-            // Yes - we'll assume we're using an Imgix web folder or proxy source
-            return $this->servdImgixUrl($source, $asset, $params);
-        } else {
-            // No - We'll used Servd's own image transformation service
-            return $this->servdTransformUrl($source, $asset, $params);
-        }
+        // We'll used Servd's own image transformation service
+        return $this->servdTransformUrl($source, $asset, $params);
     }
 
     /**
@@ -67,8 +61,30 @@ class ServdProvider extends AbstractProvider
         }
 
         // Only allow params supported by Servd
+        // Based on Serverless Sharp - see https://venveo.github.io/serverless-sharp/docs/usage/parameters
         $allowedParams = array_flip(array('w', 'h', 'q', 'fm', 'auto', 'fit', 'crop', 'fp-x', 'fp-y', 'fill-color', 'dpr', 'ar', 'dm'));
         $params = array_intersect_key($params, $allowedParams);
+
+        // Servd does not support faces / facearea
+        // Use the image's focalpoint as a fallback (if defined)
+        if (isset($params['crop']) && str_contains($params['crop'], "faces")) {
+            $params['fit'] = 'crop';
+            $params['crop'] = 'focalpoint';
+        }
+        if (isset($params['fit']) && str_contains($params['fit'], "facearea")) {
+            $params['fit'] = 'crop';
+            $params['crop'] = 'focalpoint';
+        }
+
+        // Servd does not support fillmax
+        if (isset($params['fit']) && str_contains($params['fit'], "fillmax")) {
+            $params['fit'] = 'fill';
+        }
+
+        // make sure fit="fill" when fill-color is specified
+        if (isset($params['fill-color']) && !isset($params['fit'])) {
+            $params['fit'] = 'fill';
+        }
 
         // Full path of asset on the CDN platform
         $fullPath = $imageTransforms->getFullPathForAssetAndTransform($asset, $params);
@@ -102,47 +118,5 @@ class ServdProvider extends AbstractProvider
 
         // Otherwise
         return 'https://optimise2.assets-servd.host/' . $fullPath . '&s=' . $signingKey;
-    }
-
-    /**
-     * Generate an Imgix URL, prefixed with the Servd environment
-     *
-     * @access protected
-     * @param array $source The source config array
-     * @param Asset $asset The asset
-     * @param array $params An array of parameters
-     * @return string|null
-     */
-    protected function servdImgixUrl($source, Asset $asset, $params) {
-
-        // Get the full path to the image
-        $img = $asset->path;
-        $volume = $asset->getVolume();
-        $img = ltrim(trim($volume->getFs()->subfolder, '/') . '/' . $img, '/');
-
-        // Sign the image?
-        if ( isset($params['signed'])) {
-            $signed = (bool) $params['signed'];
-        } else {
-            $signed = isset($source['signed']) ? (bool) $source['signed'] : false;
-        }
-
-        // Cleanup params
-        unset($params['signed'], $params['source']);
-
-        // merge any default params
-        if ( isset($source['defaultParams'])) {
-            $params = array_merge($source['defaultParams'], $params);
-        }
-
-        // Sign key
-        $key = null;
-        if ($signed && isset($source['key']) && ! empty($source['key']))
-        {
-            $key = $source['key'];
-        }
-
-        // Build Imgix URL
-        return $this->buildImgixUrl($source['domain'], $img, $params, $key);
     }
 }
