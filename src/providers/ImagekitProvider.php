@@ -23,13 +23,18 @@ class ImagekitProvider extends AbstractProvider
     public function getUrl($source, $asset, $params) {
 
         // Unless setup with a custom domain, Imagekit source urls take the form https://ik.imagekit.io/render/[source]
-        if ( ! isset($source['endpoint'])) {
+        if ( ! isset($source['domain']) && ! isset($source['endpoint'])) {
             $source['endpoint'] = 'https://ik.imagekit.io/render/' . $source['handle'];
+        } elseif (isset($source['domain'])) {
+            $source['endpoint'] = $source['domain'];
         }
 
         // Keys
-        if ( ! isset($source['public_key'], $source['private_key'])) {
-            throw new \InvalidArgumentException('The `' .$source . '` keys are not defined in your config.');
+        if ( ! isset($source['privateKey']) && isset($source['key'])) {
+            $source['privateKey'] = $source['key'];
+        }
+        if ( ! isset($source['publicKey'], $source['privateKey'])) {
+            throw new \InvalidArgumentException('The `' .$source['handle'] . '` keys are not defined in your config.');
         }
 
         // Image path
@@ -262,8 +267,8 @@ class ImagekitProvider extends AbstractProvider
 
         // Build an Imagekit URL
         $imageKit = new ImageKit(
-            $source['public_key'],
-            $source['private_key'],
+            $source['publicKey'],
+            $source['privateKey'],
             $source['endpoint']
         );
 

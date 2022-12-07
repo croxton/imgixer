@@ -22,8 +22,10 @@ class ImgixProvider extends AbstractProvider
     public function getUrl($source, $asset, $params) {
 
         // Unless setup with a custom domain, imgix source urls take the form [source].imgix.net
-        if ( ! isset($source['domain'])) {
-            $source['domain'] = $source['handle'] . '.imgix.net';
+        if ( ! isset($source['domain']) && ! isset($source['endpoint'])) {
+            $source['endpoint'] = $source['handle'] . '.imgix.net';
+        } elseif (isset($source['domain'])) {
+            $source['endpoint'] = $source['domain'];
         }
 
         // Image path
@@ -70,23 +72,28 @@ class ImgixProvider extends AbstractProvider
             $key = $source['key'];
         }
 
+        if ($signed && isset($source['privateKey']) && ! empty($source['privateKey']))
+        {
+            $key = $source['privateKey'];
+        }
+
         // Build Imgix URL
-        return $this->buildImgixUrl($source['domain'], $img, $params, $key);
+        return $this->buildImgixUrl($source['endpoint'], $img, $params, $key);
     }
 
     /**
      * Build an Imgix URL
      *
      * @access protected
-     * @param string $domain The Imgix source domain
+     * @param string $endpoint The Imgix source domain
      * @param string $img The image path
      * @param array $params An array of Imgix parameters
      * @param string|null $key An optional key used to sign images
      * @return string
      */
-    protected function buildImgixUrl($domain, $img, $params=array(), $key=null) {
+    protected function buildImgixUrl($endpoint, $img, $params=array(), $key=null) {
         // build image URL
-        $builder = new UrlBuilder($domain);
+        $builder = new UrlBuilder($endpoint);
         $builder->setUseHttps(true);
 
         if ($key !== null)

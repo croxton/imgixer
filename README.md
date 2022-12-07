@@ -1,10 +1,10 @@
 # Imgixer plugin for Craft CMS 4.x
 
-The most flexible [Imgix](https://imgix.com/) URL generator for Craft CMS.
+Generate image transformation URLs that work with [Imgix](https://imgix.com), [Imagekit](https://imagekit.io) and [Servd](https://servd.host).
 
-* Generate Imgix URLs with convenient methods for responsive images.
-* *New*: Speed up your templates and control panel by swapping Craft's native image transforms with Imgix rendering.
-* *New*: [Servd.host](https://servd.host) users - use Servd's built-in image transforms instead of Imgix.
+* Generate urls with convenient methods for responsive images.
+* Speed up your templates and control panel by swapping Craft's native image transforms with Imgix rendering.
+* Host with [Servd.host](https://servd.host)? Use Servd’s built-in image transform service.
 
 ![Screenshot](resources/img/plugin-logo.png)
 
@@ -40,22 +40,30 @@ return [
         
         // A unique handle that you can reference in your templates.
         'myHandle' => array(
+        
+            // Provider: either 'imgix', 'imagekit' or 'servd' (defaults to 'imgix')
+            'provider' => 'imgix',
 
-             // The imgix source domain.
-            'domain'   => 'my-domain.imgix.net',
-            
-            // The asset provider (defaults to 'imgix')
-            'provider'   => '',
+            // The image service endpoint or source domain
+            'endpoint'   => 'my-domain.imgix.net',
 
             // Optionally specify a subfolder path to prefix the path
             // of generated URLs after the source domain.
             'subfolder' => '', 
             
-            // The private Imgix key used to sign images. 
-            // Get this from the source details screen in Imgix.com
-            'key'   => '12345',
+            // The private key used to sign images. 
+            // Imgix: get this from the source details screen at https://imgix.com
+            // Imagekit: https://imagekit.io/dashboard/developer/api-keys
+            // Servd: not required
+            'privateKey'   => '12345',
             
-            // Set to true if you want images to be signed with your key.
+            // A public key used to access the image transform API 
+            // Imgix: not required 
+            // Imagekit: https://imagekit.io/dashboard/developer/api-keys
+            // Servd: not required
+            'publicKey'   => '12345',
+            
+            // Set to true if you want images to be signed with your private key.
             'signed'    => true,
             
             // Define any default parameters here:
@@ -67,8 +75,10 @@ return [
             )
         ),
         'heroBanners' => array(
-            'domain'   => 'another-domain.imgix.net',
-            'key'   => '12345',
+            'provider' => 'imagekit',
+            'endpoint'   => 'https://ik.imagekit.io/render/my-identifier',
+            'privateKey'   => '12345',
+            'publicKey'   => '67890',
             'signed'    => true,
             'defaultParams' => array(
                 'auto' => 'compress,format',
@@ -78,8 +88,9 @@ return [
             )
         ),
         'portraits' => array(
-            'domain'   => 'another-domain.imgix.net',
-            'key'   => '12345',
+            'provider' => 'imgix',
+            'endpoint'   => 'another-domain.imgix.net',
+            'privateKey'   => '12345',
             'signed'    => true,
             'defaultParams' => array(
                 'auto' => 'compress,format,enhance,redeye',
@@ -91,9 +102,10 @@ return [
         // Optional: define a source to use in place of Craft's native image transforms. 
         // This will be used for all transforms used in your templates and in the control panel.
         'assetTransforms' => array(
-            'domain'    => 'my-domain.imgix.net',
-            'key'       => '12345',
-            'signed'    => true
+            'provider' => 'imgix',
+            'endpoint' => 'my-domain.imgix.net',
+            'privateKey' => '12345',
+            'signed' => true
         ),
     ),
 
@@ -172,9 +184,9 @@ With either option, you will first need to install [Servd Assets and Helpers](ht
 
 ```php
 'my-servd-web-folder' => array(
-   'domain' => 'my-domain.imgix.net',
    'provider' => 'servd',
-   'key' => '12345',
+   'endpoint' => 'my-domain.imgix.net',
+   'privateKey' => '12345',
    'signed' => true,
    'defaultParams' => array(
        'auto' => 'compress,format',
@@ -201,7 +213,9 @@ Create a source in `imgixer.php` config, adding `servd` as the asset provider. D
 ),
 ```
 
-Servd's image transformation service supports the following parameters:
+## Core parameter set 
+
+Supported by `imgix`, `imagekit` and `servd`.
 
 #### fm - output format
 Can be one of: webp, png, jpeg, tiff.
@@ -252,9 +266,49 @@ If auto includes format, the service will try to determine the ideal format to c
 * If a png is requested and that png has no alpha channel, it will be returned as a jpeg.
 
 ##### auto=compress
-The compress parameter will try to run post-processed optimizations on the image prior to returning it. 
+The compress parameter will try to run post-processed optimizations on the image prior to returning it.
 
-Png images will run through pngquant.
+## Extended parameter set
+
+Supported by `imgix` and `imagekit` only. There may be some variations in image output as  parameters do not directly correlate, so experimentation is advised.
+
+#### border
+This adds a border to the image. It accepts two parameters - the width of the border and the color of the border: `border=<border-width>,<hex code>`
+
+#### crop=faces
+The image crop will be automatically centred on a detected face (or faces) in the image.
+
+#### fit=facearea
+Finds the area containing all faces, or a specific face in an image, and scales it to specified width and height dimensions.
+
+#### fp-z - focal point zoom
+Must be a float between 1 and 100, inclusive. The default value is 1, representing the original size of the image, and every full step is the equivalent of a 100% zoom (e.g. fp-z=2 is the same as viewing the image at 200%). The suggested range is 1 – 10. For the focal point to be set on an image, `fit=crop` and `crop=focalpoint` must also be set.
+
+#### lossless
+The lossless parameter enables delivery of lossless images in formats that support lossless compression (JPEG XR and WEBP). Valid values are `true` and `false`.
+
+#### rot
+Rotates the image by degrees according to the value specified. Valid values are in the range `0 – 359`, and rotation is counter-clockwise with `0` (the default) at the top of the image.
+
+#### trim
+Trims the image to remove a uniform border around the image.
+
+##### trim=auto
+The image is trimmed automatically based on the border color.
+
+##### trim=color
+(Imgix only) The image will trim away the hex color specified by trim-color.
+
+#### trim-tol
+The trim tolerance defines how different a color can be before the trim operation stops. 
+Imgix requires `trim=color` to be set for this parameter to be applied.
+
+## Full service-specific parameter sets
+If you wish to be able to switch easily between service providers, try to stick with the core or extended set of parameters listed above. However, the full sets of available parameters for each of the supported image transform services can be found here:
+
+Imgix: https://docs.imgix.com/apis/rendering
+Imagekit: https://docs.imagekit.io/features/image-transformations/resize-crop-and-other-transformations
+Servd: https://venveo.github.io/serverless-sharp/docs/usage/parameters
 
 
 ## Element API
@@ -296,16 +350,17 @@ return [
 
 ## Web proxy
 
-When using Imgix as a proxy you need to provide the absolute URL to the image you want to proxy. You can do that at the template level (if you need to proxy multiple domains), or create a `source` for each proxied domain in your config and pass the proxy domain to the `subfolder`.
+When using Imgix or Imagekit as a proxy you need to provide the absolute URL to the image you want to proxy. You can do that at the template level (if you need to proxy multiple domains), or create a `source` for each proxied domain in your config and pass the proxy domain to the `subfolder`.
 
 So for example you can have a config like this...
 
 ```php
 return [
    'my-proxy' => array(
-      'domain'   => 'my-proxy-source.imgix.net',
+      'provider' => 'imgix',
+      'endpoint' => 'my-proxy-source.imgix.net',
       'subfolder' => 'https://www.my-proxied-website.com/',
-      'key'   => 'XXXXXXXXXXXX',
+      'privateKey' => 'XXXXXXXXXXXX',
       'defaultParams' => array(
          'auto' => 'compress,format',
          'fit' => 'crop',
@@ -326,8 +381,9 @@ Alternatively, use a config like this...
 ```php
 return [
    'my-proxy' => array(
-            'domain'   => 'my-proxy-source.imgix.net',
-            'key'   => 'XXXXXXXXXXXX',
+            'provider' => 'imgix',
+            'endpoint' => 'my-proxy-source.imgix.net',
+            'privateKey' => 'XXXXXXXXXXXX',
             'defaultParams' => array(
                 'auto' => 'compress,format',
                 'fit' => 'crop',
