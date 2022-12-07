@@ -96,6 +96,11 @@ class ImagekitProvider extends AbstractProvider
         ksort($params);
         foreach ($params as $key => $value) {
             switch($key) {
+
+                case 'ar' :
+                    $transforms[$key] = str_replace(':', '-', $value);
+                    break;
+
                 case 'auto' :
                     $autoValues = array_map('trim', explode(',', $value));
                     foreach ($autoValues as $auto) {
@@ -110,8 +115,9 @@ class ImagekitProvider extends AbstractProvider
                         }
                     }
                     break;
-                case 'ar' :
-                    $transforms[$key] = str_replace(':', '-', $value);
+
+                case 'border' :
+                    $transforms['b'] = str_replace([',', ' '], ['_', ''], $value);
                     break;
 
                 case 'crop' :
@@ -127,40 +133,56 @@ class ImagekitProvider extends AbstractProvider
                     }
                     break;
 
+                case 'cs' :
+                    // typically the user wants to use the original image's
+                    // color profile if this value is specified
+                    if ($value === 'adobergb1998') {
+                        $transforms['cp'] = true;
+                    }
+                    break;
+
                 case "fill-color" :
                     $transforms['bg'] = $value;
                     break;
 
                 case 'fit' :
-                    if ($value === 'scale') {
-                      $transforms['c-force'] = null;
+
+                    if ($value === 'clip') {
+                        $transforms['c-at_max'] = null;
                     }
+
                     if ($value === 'crop') {
                       $transforms['c-maintain_ratio'] = null;
                     }
+
+                    if ($value === 'facearea') {
+                        $transforms['c-maintain_ratio'] = null;
+                        $transforms['fo'] = 'face';
+                    }
+
                     if ($value === 'fill') {
                       $transforms['cm-pad_resize'] = null;
                     }
-                    if ($value === 'clip') {
-                      $transforms['c-at_max'] = null;
-                    }
-                    if ($value === 'max') {
-                      $transforms['c-at_max'] = null;
-                    }
+
                     if ($value === 'fillmax') {
-                        if ($params['w'] && $params['w'] > $asset->width || $params['h'] && $params['h'] > $asset->height) {
+                        if (($params['w'] && $params['w'] > $asset->width) || ($params['h'] && $params['h'] > $asset->height)) {
                             $transforms['cm-pad_extract'] = null;
                         } else {
                             $transforms['cm-pad_resize'] = null;
                         }
                     }
+
+                    if ($value === 'max') {
+                      $transforms['c-at_max'] = null;
+                    }
                     if ($value === 'min') {
                       $transforms['c-at_min'] = null;
                     }
-                    if ($value === 'facearea') {
-                      $transforms['c-maintain_ratio'] = null;
-                      $transforms['fo'] = 'face';
+
+                    if ($value === 'scale') {
+                        $transforms['c-force'] = null;
                     }
+
                     break;
 
                 case 'fp-x' :
@@ -196,12 +218,47 @@ class ImagekitProvider extends AbstractProvider
                     $transforms['yc'] = $yc;
                     break;
 
+                case 'lossless' :
+                    $transforms['lo'] = $value;
+                    break;
+
+                case 'rot' :
+                    $transforms['rt'] = $value;
+                    break;
+
+                case 'sat' :
+                    // grayscale support (approximates Imgix desaturation)
+                    if ($value < -75) {
+                        $transforms['e-grayscale'] = null;
+                    }
+                    break;
+
+                case 'trim' :
+                    if (str_contains($value, 'auto'))   {
+                        $transforms['t'] = true;
+                    }
+                    break;
+
+                case 'trim-tol' :
+                    $transforms['t'] = $value;
+                    break;
+
                 default :
-                    $transforms[$key] = $value;
+                    $transforms[$key] = str_replace([',', ' '], ['_', ''], $value);
+                    break;
           }
         }
 
-        // @TODO: aspect ratio - if set, remove height OR width parameter otherwise it overrides the value
+        // aspect ratio - if set, remove height OR width parameter otherwise it
+        // overrides the aspect ratio, which is a different behaviour to Imgix
+        if (isset($transforms['ar'], $transforms['w'], $transforms['h'])) {
+            // remove whichever is the smaller dimension
+            if ($transforms['w'] > $transforms['h']) {
+                unset($transforms['h']);
+            } else {
+                unset($transforms['w']);
+            }
+        }
 
         // Build an Imagekit URL
         $imageKit = new ImageKit(
