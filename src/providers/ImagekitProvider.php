@@ -121,6 +121,14 @@ class ImagekitProvider extends AbstractProvider
                     }
                     break;
 
+                case 'blur' :
+                    // Imgix: 0-2000, Imagekit 0-100
+                    $transforms['bl'] = (int)($value / 10);
+                    if ($transforms['bl'] > 100) {
+                        $transforms['bl'] = 100;
+                    }
+                    break;
+
                 case 'border' :
                     $transforms['b'] = str_replace([',', ' '], ['_', ''], $value);
                     break;
@@ -170,7 +178,7 @@ class ImagekitProvider extends AbstractProvider
                     }
 
                     if ($value === 'fillmax') {
-                        if (($params['w'] && $params['w'] > $asset->width) || ($params['h'] && $params['h'] > $asset->height)) {
+                        if ((isset($params['w']) && $params['w'] > $asset->width) || (isset($params['h']) && $params['h'] > $asset->height)) {
                             $transforms['cm-pad_extract'] = null;
                         } else {
                             $transforms['cm-pad_resize'] = null;
@@ -188,6 +196,17 @@ class ImagekitProvider extends AbstractProvider
                         $transforms['c-force'] = null;
                     }
 
+                    break;
+
+                case 'fm' :
+                    if ( ! ( isset($transforms['f']) && $transforms['f'] === 'auto') ) {
+                        $imagekitFormats = ['jpg', 'jpeg', 'webp', 'avif', 'png'];
+                        if (in_array($value, $imagekitFormats, true)) {
+                            $transforms['f'] = $value;
+                        } else {
+                            $transforms['f'] = 'auto';
+                        }
+                    }
                     break;
 
                 case 'fp-x' :

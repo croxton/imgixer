@@ -215,10 +215,10 @@ Create a source in `imgixer.php` config, adding `servd` as the asset provider. D
 
 ## Core parameter set 
 
-Supported by `imgix`, `imagekit` and `servd`.
+**Supported by Imgix, Imagekit and Servd**.
 
 #### fm - output format
-Can be one of: webp, png, jpeg, tiff.
+Can be one of: webp, png, jpeg | jpg, tiff.
 
 #### w - width
 Scales image to supplied width while maintaining aspect ratio.
@@ -227,7 +227,7 @@ Scales image to supplied width while maintaining aspect ratio.
 Scales image to supplied height while maintaining aspect ratio.
 
 #### q - quality
-(75) - 1-100
+(default 75) - 1-100 - Controls the output quality of lossy file formats.
 
 #### ar - aspect-ratio
 (1.0:1.0) - When fit=crop, an aspect ratio such as 16:9 can be supplied, optionally with a height or width. If neither height or width are defined, the original image size will be used.
@@ -270,25 +270,40 @@ The compress parameter will try to run post-processed optimizations on the image
 
 ## Extended parameter set
 
-Supported by `imgix` and `imagekit` only. There may be some variations in image output as  parameters do not directly correlate, so experimentation is advised.
+**Supported by Imgix and Imagekit only**. There may be some variations in image output as the behaviour of parameters does not always directly correlate, so experimentation is advised.
+
+#### blur
+Applies a Gaussian style blur to your image, smoothing out image noise.
+
+Valid values are in the range from 0 to 2000. The default value is 0, which leaves the image unchanged.
 
 #### border
 This adds a border to the image. It accepts two parameters - the width of the border and the color of the border: `border=<border-width>,<hex code>`
 
-#### crop=faces
-The image crop will be automatically centred on a detected face (or faces) in the image.
-
 #### fit=facearea
-Finds the area containing all faces, or a specific face in an image, and scales it to specified width and height dimensions.
+Finds the area containing all faces, or a specific face in an image, and scales it to specified width and height dimensions. Great for thumbnail portraits.
+
+Notes:
+* When using Imgix, add `facepad=1.6` to approximate the default face padding provided by Imagekit (face padding is not configurable in Imagekit).
+* Imgix will not apply the aspect-ratio (`ar`) parameter when `fit=facearea`, therefore the width and height parameters should always be supplied when using this parameter.
+
+#### fit=fillmax
+Resizes the image to fit within the requested width and height dimensions while preserving the original aspect ratio and without discarding any original image data. If the requested width or height exceeds that of the original, the original image remains the same size. Use the `fill-color` parameter to specify the background colour to use.
+
+Note: Imgix will not apply the aspect-ratio (`ar`) parameter when `fit=fillmax`, therefore the width and height parameters should always be supplied when using this parameter.
 
 #### fp-z - focal point zoom
-Must be a float between 1 and 100, inclusive. The default value is 1, representing the original size of the image, and every full step is the equivalent of a 100% zoom (e.g. fp-z=2 is the same as viewing the image at 200%). The suggested range is 1 – 10. For the focal point to be set on an image, `fit=crop` and `crop=focalpoint` must also be set.
+Must be a float between 1 and 100, inclusive. The default value is 1, representing the original size of the image, and every full step is the equivalent of a 100% zoom (e.g. `fp-z=2` is the same as viewing the image at 200%). The suggested range is 1 – 10. For the focal point to be set on an image, `fit=crop` and `crop=focalpoint` must also be set.
 
 #### lossless
 The lossless parameter enables delivery of lossless images in formats that support lossless compression (JPEG XR and WEBP). Valid values are `true` and `false`.
 
 #### rot
 Rotates the image by degrees according to the value specified. Valid values are in the range `0 – 359`, and rotation is counter-clockwise with `0` (the default) at the top of the image.
+
+#### sat=-100
+Outputs a fully desaturated grayscale image.
+Note: Imagekit desaturates borders and background fill colours, as well as the original image.
 
 #### trim
 Trims the image to remove a uniform border around the image.
@@ -297,7 +312,7 @@ Trims the image to remove a uniform border around the image.
 The image is trimmed automatically based on the border color.
 
 ##### trim=color
-(Imgix only) The image will trim away the hex color specified by trim-color.
+Imgix only: the image will trim away the hex color specified by the `trim-color` parameter.
 
 #### trim-tol
 The trim tolerance defines how different a color can be before the trim operation stops. 
