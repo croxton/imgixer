@@ -306,9 +306,9 @@ Imgix requires `trim=color` to be set for this parameter to be applied.
 ## Full service-specific parameter sets
 If you wish to be able to switch easily between service providers, try to stick with the core or extended set of parameters listed above. However, the full sets of available parameters for each of the supported image transform services can be found here:
 
-Imgix: https://docs.imgix.com/apis/rendering
-Imagekit: https://docs.imagekit.io/features/image-transformations/resize-crop-and-other-transformations
-Servd: https://venveo.github.io/serverless-sharp/docs/usage/parameters
+* **Imgix**: https://docs.imgix.com/apis/rendering
+* **Imagekit**: https://docs.imagekit.io/features/image-transformations/resize-crop-and-other-transformations
+* **Servd**: https://venveo.github.io/serverless-sharp/docs/usage/parameters
 
 
 ## Element API
