@@ -216,7 +216,7 @@ class UrlService extends Component
                 $params['auto'] = 'format,compress';
             }
 
-            // Build the Imgix URL for the image
+            // Build the URL for the image using the specified image service
             $url = (new ImgixerTwigExtension)->imgix($asset, $params);
         }
 

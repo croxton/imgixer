@@ -80,23 +80,7 @@ class ImagekitProvider extends AbstractProvider
         // Map the formatting of our standard set of parameters to Imagekit
         $transformsPre = [];
         $transforms = [];
-
-        // Focalpoint - we need to resize the image first
-        if (isset($params['crop']) && $params['crop'] === 'focalpoint') {
-            if (isset($params['w'])) {
-                $resizeWidth = $params['w'];
-                if (isset($params['fp-z'])) {
-                    $resizeWidth = $params['w'] * $params['fp-z'];
-                }
-                $transformsPre['w'] = $resizeWidth;
-            } elseif (isset($params['h'])) {
-                $resizeHeight = $params['h'];
-                if (isset($params['fp-z'])) {
-                    $resizeHeight = $params['h'] * $params['fp-z'];
-                }
-                $transformsPre['h'] = $resizeHeight;
-            }
-        }
+        $transformsPost = [];
 
         ksort($params);
         foreach ($params as $key => $value) {
@@ -130,16 +114,37 @@ class ImagekitProvider extends AbstractProvider
                     break;
 
                 case 'border' :
-                    $transforms['b'] = str_replace([',', ' '], ['_', ''], $value);
+                    $transformsPost['b'] = str_replace([',', ' '], ['_', ''], $value);
+                    break;
+
+                case 'con' :
+                    if ($value > 0) {
+                        $transforms['e-contrast'] = null;
+                    }
                     break;
 
                 case 'crop' :
                     if (str_contains($value, "faces")) {
-                      $transforms['fo'] = 'face';
+                        $transforms['fo'] = 'face';
                     } elseif (str_contains($value, "entropy")) {
-                      $transforms['fo'] = 'entropy';
+                        $transforms['fo'] = 'entropy';
                     } elseif (str_contains($value, "focalpoint")) {
-                      $transforms['cm-extract'] = null;
+                        // we need to resize the image first...
+                        if (isset($params['w'])) {
+                            $resizeWidth = $params['w'];
+                            if (isset($params['fp-z'])) {
+                                $resizeWidth = $params['w'] * $params['fp-z'];
+                            }
+                            $transformsPre['w'] = $resizeWidth;
+                        } elseif (isset($params['h'])) {
+                            $resizeHeight = $params['h'];
+                            if (isset($params['fp-z'])) {
+                                $resizeHeight = $params['h'] * $params['fp-z'];
+                            }
+                            $transformsPre['h'] = $resizeHeight;
+                        }
+                        // ...then extract on second chained transform
+                        $transforms['cm-extract'] = null;
                     } else {
                       // top, left, bottom etc
                       $transforms['fo'] = str_replace([',', ' '], ['_', ''], $value);
@@ -246,15 +251,23 @@ class ImagekitProvider extends AbstractProvider
                     $transforms['lo'] = $value;
                     break;
 
+                case 'radius' :
+                    $transforms['r'] = $value;
+                    break;
+
                 case 'rot' :
                     $transforms['rt'] = $value;
                     break;
 
                 case 'sat' :
                     // grayscale support (approximates Imgix desaturation)
-                    if ($value < -75) {
+                    if ($value === -100) {
                         $transforms['e-grayscale'] = null;
                     }
+                    break;
+
+                case "sharp" :
+                    $transforms['e-sharpen'] = $value;
                     break;
 
                 case 'trim' :
@@ -293,7 +306,7 @@ class ImagekitProvider extends AbstractProvider
 
         return $imageKit->url([
             'path' => '/' . $img,
-            'transformation' => array($transformsPre, $transforms),
+            'transformation' => array($transformsPre, $transforms, $transformsPost),
             'transformationPosition' => 'query',
             'seoFriendly' => true,
             'signed' => $signed

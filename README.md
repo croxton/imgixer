@@ -3,7 +3,8 @@
 Generate image transformation URLs that work with [Imgix](https://imgix.com), [Imagekit](https://imagekit.io) and [Servd](https://servd.host).
 
 * Generate urls with convenient methods for responsive images.
-* Speed up your templates and control panel by swapping Craft's native image transforms with Imgix rendering.
+* Use the same transform parameters with all image providers.
+* Speed up your templates and control panel by swapping Craft's native image transforms with Imgix or Imagekit rendering.
 * Host with [Servd.host](https://servd.host)? Use Servd’s built-in image transform service.
 
 ![Screenshot](resources/img/plugin-logo.png)
@@ -198,7 +199,7 @@ With either option, you will first need to install [Servd Assets and Helpers](ht
 
 ### 2. Use Servd's own image transformation service
 
-Servd provides its own image transformation service that supports a subset of Imgix's Rendering API, that nonetheless covers most use cases. This does NOT require an Imgix account, but note that it does consume the Servd resources allocated to your plan.
+Servd provides its own image transformation service (https://optimise2.assets-servd.host) that supports a subset of Imgix's Rendering API and covers the majority of use cases. If you are hosting with Servd it may be all you need.
 
 Create a source in `imgixer.php` config, adding `servd` as the asset provider. Do not set a domain:
 
@@ -270,7 +271,7 @@ The compress parameter will try to run post-processed optimizations on the image
 
 ## Extended parameter set
 
-**Supported by Imgix and Imagekit only**. There may be some variations in image output as the behaviour of parameters does not always directly correlate, so experimentation is advised.
+**Supported by Imgix and Imagekit only**. There may be some variation in image output as the behaviour of parameters does not always directly correlate between services.
 
 #### blur
 Applies a Gaussian style blur to your image, smoothing out image noise.
@@ -279,6 +280,12 @@ Valid values are in the range from 0 to 2000. The default value is 0, which leav
 
 #### border
 This adds a border to the image. It accepts two parameters - the width of the border and the color of the border: `border=<border-width>,<hex code>`
+
+#### con - contrast
+(0) Adjusts the contrast of the image. Valid values are in the range -100 – 100. The default value is 0, which leaves the image unchanged.
+
+Note:
+* Imagekit: any value over 0 applies automatic contrast adjustment.
 
 #### fit=facearea
 Finds the area containing all faces, or a specific face in an image, and scales it to specified width and height dimensions. Great for thumbnail portraits.
@@ -290,7 +297,8 @@ Notes:
 #### fit=fillmax
 Resizes the image to fit within the requested width and height dimensions while preserving the original aspect ratio and without discarding any original image data. If the requested width or height exceeds that of the original, the original image remains the same size. Use the `fill-color` parameter to specify the background colour to use.
 
-Note: Imgix will not apply the aspect-ratio (`ar`) parameter when `fit=fillmax`, therefore the width and height parameters should always be supplied when using this parameter.
+Note:
+* Imgix will not apply the aspect-ratio (`ar`) parameter when `fit=fillmax`, therefore the width and height parameters should always be supplied when using this parameter.
 
 #### fp-z - focal point zoom
 Must be a float between 1 and 100, inclusive. The default value is 1, representing the original size of the image, and every full step is the equivalent of a 100% zoom (e.g. `fp-z=2` is the same as viewing the image at 200%). The suggested range is 1 – 10. For the focal point to be set on an image, `fit=crop` and `crop=focalpoint` must also be set.
@@ -298,12 +306,22 @@ Must be a float between 1 and 100, inclusive. The default value is 1, representi
 #### lossless
 The lossless parameter enables delivery of lossless images in formats that support lossless compression (JPEG XR and WEBP). Valid values are `true` and `false`.
 
+#### radius
+Used to specify the image corner radius in pixels. The background of rounded images will be transparent.
+
+Note:
+* Imagekit: if you have specified a border, it will not be rounded.
+
 #### rot
-Rotates the image by degrees according to the value specified. Valid values are in the range `0 – 359`, and rotation is counter-clockwise with `0` (the default) at the top of the image.
+Rotates the image by degrees according to the value specified. Valid values are in the range 0 – 359, and rotation is counter-clockwise with 0 (the default) at the top of the image.
 
 #### sat=-100
 Outputs a fully desaturated grayscale image.
-Note: Imagekit desaturates borders and background fill colours, as well as the original image.
+
+#### sharp - sharpen
+Sharpens the image using luminance (which only affects the black and white values), providing crisp detail with minimal color artifacts.
+
+Recommended values are in the range 0 – 100. The default value is 0, which leaves the image unchanged.
 
 #### trim
 Trims the image to remove a uniform border around the image.
@@ -318,12 +336,12 @@ Imgix only: the image will trim away the hex color specified by the `trim-color`
 The trim tolerance defines how different a color can be before the trim operation stops. 
 Imgix requires `trim=color` to be set for this parameter to be applied.
 
-## Full service-specific parameter sets
+## Service-specific parameter sets
 If you wish to be able to switch easily between service providers, try to stick with the core or extended set of parameters listed above. However, the full sets of available parameters for each of the supported image transform services can be found here:
 
 * **Imgix**: https://docs.imgix.com/apis/rendering
 * **Imagekit**: https://docs.imagekit.io/features/image-transformations/resize-crop-and-other-transformations
-* **Servd**: https://venveo.github.io/serverless-sharp/docs/usage/parameters
+* **Servd**: only supports the core parameter set described above
 
 
 ## Element API

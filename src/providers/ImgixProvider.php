@@ -60,9 +60,26 @@ class ImgixProvider extends AbstractProvider
             $params = array_merge($source['defaultParams'], $params);
         }
 
-        // Map the formatting of a standard/basic set of parameters to Imagekit
-        if (isset($params['fit']) && $params['fit'] === 'fill' && !isset($params['fill-color']) ) {
-            $params['fill-color'] = '#FFF';
+        $transforms = [];
+
+        foreach ($params as $key => $value) {
+            switch($key) {
+
+                // support a custom 'radius' parameter, for simple rounded corners
+                // with a transparent background
+                case 'radius' :
+                    $transforms['mask'] = 'corners';
+                    $transforms['corner-radius'] = $value;
+                    if ( ! isset($transforms['fm'])) {
+                        // widest transparent background support with lowest filesize
+                        $transforms['fm'] = 'webp';
+                    }
+                    break;
+
+                default :
+                    $transforms[$key] = $value;
+                    break;
+            }
         }
 
         // Sign key
@@ -78,7 +95,7 @@ class ImgixProvider extends AbstractProvider
         }
 
         // Build Imgix URL
-        return $this->buildImgixUrl($source['endpoint'], $img, $params, $key);
+        return $this->buildImgixUrl($source['endpoint'], $img, $transforms, $key);
     }
 
     /**
