@@ -38,40 +38,42 @@ class UrlService extends Component
 
     /**
      * @param Asset $asset
-     * @param AssetTransform|string|array|null $transform
+     * @param ImageTransform|string|array|null $transform
      *
      * @return string|null
      * @throws AssetTransformException
      */
     public function getUrl(Asset $asset, $transform)
     {
-        $url = null;
         $assetExt = $asset->getExtension();
 
-        if ($transform !== null) {
-
-            // Look up asset transform handle
-            if (is_string($transform)) {
-                $assetTransforms = Craft::$app->getAssetTransforms();
-                $transform = $assetTransforms->getTransformByHandle($transform);
-            }
-
-            // If array, convert to an AssetTransform model
-            if (is_array($transform)) {
-                $transform = new AssetTransform($transform);
-            }
-
-            // If image is a SVG, bail out
-            $format = empty($transform['format']) ? $assetExt : $transform['format'];
-            if ($format === 'svg') {
-                return null;
-            }
-
-            // Build Imgix url
-            $url = $this->getTransformUrl($asset, $transform);
+        if (empty($transform)) {
+            $transform = new ImageTransform([
+                'height' => $asset->height,
+                'width' => $asset->width,
+                'interlace' => 'line',
+            ]);
         }
 
-        return $url;
+        // Look up asset transform handle
+        if (is_string($transform)) {
+            $assetTransforms = Craft::$app->getAssetTransforms();
+            $transform = $assetTransforms->getTransformByHandle($transform);
+        }
+
+        // If array, convert to an AssetTransform model
+        if (is_array($transform)) {
+            $transform = new AssetTransform($transform);
+        }
+
+        // If image is a SVG, bail out
+        $format = empty($transform['format']) ? $assetExt : $transform['format'];
+        if ($format === 'svg') {
+            return null;
+        }
+
+        // Build Imgix url
+        return $this->getTransformUrl($asset, $transform);
     }
 
     /**

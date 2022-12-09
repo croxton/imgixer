@@ -107,13 +107,15 @@ class Imgixer extends Plugin
         // Replace transforms?
         if ($this->settings->transformSource !== null) {
 
-            // Handler: Assets::EVENT_GET_ASSET_URL
+            // Handler: Assets::EVENT_DEFINE_URL
             Event::on(
                 Asset::class,
                 Asset::EVENT_DEFINE_URL,
                 function (DefineAssetUrlEvent $event) {
-                    $event->handled = true;
                     $event->url = $this->urlService->getUrl($event->sender, $event->transform);
+                    if ($event->url) {
+                        $event->handled = true;
+                    }
                 }
             );
 
@@ -122,8 +124,10 @@ class Imgixer extends Plugin
                 Assets::class,
                 Assets::EVENT_DEFINE_THUMB_URL,
                 function (DefineAssetThumbUrlEvent $event) {
-                    $event->handled = true;
                     $event->url = $this->urlService->getThumbUrl($event);
+                    if ($event->url) {
+                        $event->handled = true;
+                    }
                 }
             );
 
@@ -132,8 +136,10 @@ class Imgixer extends Plugin
                 Asset::class,
                 Asset::EVENT_BEFORE_GENERATE_TRANSFORM,
                 function (GenerateTransformEvent $event) {
-                    $event->handled = true;
                     $event->url = $this->urlService->getUrl($event->asset, $event->transform);
+                    if ($event->url) {
+                        $event->handled = true;
+                    }
                 }
             );
 
