@@ -51,7 +51,9 @@ class ImagekitProvider extends AbstractProvider
         } elseif ( ! is_string($asset) && $asset instanceof Asset) {
             // Get the filesystem
             $fs = $asset->getVolume()->getFs();
-            $img = ltrim(trim($fs->subfolder, '/') . '/' . $img, '/');
+            if (isset($fs->subfolder) && ! empty($fs->subfolder)) {
+                $img = ltrim(trim($fs->subfolder, '/') . '/' . $img, '/');
+            }
 
             // Do we have a Servd filesystem?
             if (get_class($fs) === 'servd\AssetStorage\AssetsPlatform\Fs') {

@@ -42,7 +42,9 @@ class ImgixProvider extends AbstractProvider
         } elseif ( ! is_string($asset) && $asset instanceof Asset) {
             // Get the filesystem
             $fs = $asset->getVolume()->getFs();
-            $img = ltrim(trim($fs->subfolder, '/') . '/' . $img, '/');
+            if (isset($fs->subfolder) && ! empty($fs->subfolder)) {
+                $img = ltrim(trim($fs->subfolder, '/') . '/' . $img, '/');
+            }
         }
 
         // Sign the image?
