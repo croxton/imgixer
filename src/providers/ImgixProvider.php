@@ -45,6 +45,14 @@ class ImgixProvider extends AbstractProvider
             if (isset($fs->subfolder) && ! empty($fs->subfolder)) {
                 $img = ltrim(trim($fs->subfolder, '/') . '/' . $img, '/');
             }
+
+            // Do we have a Servd filesystem?
+            if (get_class($fs) === 'servd\AssetStorage\AssetsPlatform\Fs') {
+                // remove the project slug prefix
+                $img = explode('/', $img);
+                array_shift($img);
+                $img = implode('/', $img);
+            }
         }
 
         // Sign the image?
