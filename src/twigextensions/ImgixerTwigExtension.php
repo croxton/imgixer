@@ -168,6 +168,53 @@ class ImgixerTwigExtension extends AbstractExtension
         $providerClass = '\croxton\imgixer\providers\\' . ucfirst($provider) .'Provider';
 
         // Build URL using the selected provider
-        return (new $providerClass())->getUrl($this->sources[$source], $asset, $params);
+        return (new $providerClass())->getUrl($this->sources[$source], $asset, $this->formatParams($params, $asset));
+    }
+
+    /**
+     * Core parameter formatting
+     *
+     * @param array $params
+     * @param string|Asset $asset The asset URL
+     * @return array
+     */
+    protected function formatParams(array $params, Asset|string $asset): array
+    {
+        if (!$asset instanceof Asset) {
+            return $params;
+        }
+
+        // Predictable focalpoint crops
+        if ( isset($params['fit'], $params['crop']) && $params['fit'] === 'crop' && $params['crop'] === 'focalpoint') {
+
+            $ar = $asset->width / $asset->height;
+            if (isset($params['ar'])) {
+                // get aspect ratio, if supplied
+                $ar = explode(':', $params['ar']);
+                if (isset($ar[0],$ar[1])) {
+                    $ar = $ar[0] / $ar[1];
+                }
+            }
+
+            // make sure we have both width and height set, if we only have one
+            if (isset($params['w']) && !isset($params['h'])) {
+                $params['h'] = (int) $params['w'] / $ar;
+            } elseif (isset($params['h']) && !isset($params['w'])) {
+                $params['w'] = (int) $params['h'] * $ar;
+            } elseif(!isset($params['w'],$params['h'])) {
+                $params['w'] = (int) $asset->width;
+                $params['h'] = (int) $asset->width / $ar;
+            }
+
+            // Populate fp-x fp-y params from the asset, if not supplied
+            if (!isset($params['fp-x'])) {
+                $params['fp-x'] = $asset->focalPoint['x'] ?? 0.5;
+            }
+            if (!isset($params['fp-y'])) {
+                $params['fp-x'] = $asset->focalPoint['y'] ?? 0.5;
+            }
+        }
+
+        return $params;
     }
 }

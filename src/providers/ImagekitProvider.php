@@ -138,18 +138,21 @@ class ImagekitProvider extends AbstractProvider
                                 $resizeWidth = $params['w'] * $params['fp-z'];
                             }
                             $transformsPre['w'] = $resizeWidth;
-                        } elseif (isset($params['h'])) {
+                        }
+                        if (isset($params['h'])) {
                             $resizeHeight = $params['h'];
                             if (isset($params['fp-z'])) {
                                 $resizeHeight = $params['h'] * $params['fp-z'];
                             }
                             $transformsPre['h'] = $resizeHeight;
                         }
+                        $transformsPre['c-at_least'] = null;
+
                         // ...then extract on second chained transform
                         $transforms['cm-extract'] = null;
                     } else {
-                      // top, left, bottom etc
-                      $transforms['fo'] = str_replace([',', ' '], ['_', ''], $value);
+                        // top, left, bottom etc
+                        $transforms['fo'] = str_replace([',', ' '], ['_', ''], $value);
                     }
                     break;
 
@@ -172,7 +175,7 @@ class ImagekitProvider extends AbstractProvider
                     }
 
                     if ($value === 'crop') {
-                      $transforms['c-maintain_ratio'] = null;
+                        $transforms['c-maintain_ratio'] = null;
                     }
 
                     if ($value === 'facearea') {
@@ -181,7 +184,7 @@ class ImagekitProvider extends AbstractProvider
                     }
 
                     if ($value === 'fill') {
-                      $transforms['cm-pad_resize'] = null;
+                        $transforms['cm-pad_resize'] = null;
                     }
 
                     if ($value === 'fillmax') {
@@ -193,10 +196,10 @@ class ImagekitProvider extends AbstractProvider
                     }
 
                     if ($value === 'max') {
-                      $transforms['c-at_max'] = null;
+                        $transforms['c-at_max'] = null;
                     }
                     if ($value === 'min') {
-                      $transforms['c-at_min'] = null;
+                        $transforms['c-at_min'] = null;
                     }
 
                     if ($value === 'scale') {
@@ -217,12 +220,22 @@ class ImagekitProvider extends AbstractProvider
                     break;
 
                 case 'fp-x' :
-                    // calculate pixel x position relative to image width
+
+                    // calculate pixel x position relative to the *resized* image width
+                    $cropRatio = $params['w'] / $params['h'];
+                    $imageRatio = $asset->width / $asset->height;
+
+                    if ($cropRatio > $imageRatio) {
+                        $resizeWidth = $params['w'];
+                    } else {
+                        $resizeWidth = $params['h'] * $imageRatio;
+                    }
+
                     $zoom = 1;
                     if (isset($params['fp-z'])) {
                         $zoom = $params['fp-z'];
                     }
-                    $imageWidth = $params['w'] * $zoom;
+                    $imageWidth = $resizeWidth * $zoom;
                     $xc = (int) ($value * $imageWidth);
 
                     // ImageKit will return original image if the requested extract exceeds max width of image
@@ -233,12 +246,21 @@ class ImagekitProvider extends AbstractProvider
                     break;
 
                 case 'fp-y' :
-                    // calculate pixel y position relative to image height
+                    // calculate pixel y position relative to the *resized* image height
+                    $cropRatio = $params['w'] / $params['h'];
+                    $imageRatio = $asset->width / $asset->height;
+
+                    if ($cropRatio > $imageRatio) {
+                        $resizeHeight = $params['w'] / $imageRatio;
+                    } else {
+                        $resizeHeight = $params['h'];
+                    }
+
                     $zoom = 1;
                     if (isset($params['fp-z'])) {
                         $zoom = $params['fp-z'];
                     }
-                    $imageHeight = $params['w'] * ($asset->height / $asset->width) * $zoom;
+                    $imageHeight = $resizeHeight * $zoom;
                     $yc = (int) ($value * $imageHeight);
 
                     // ImageKit will return original image if the requested extract exceeds max height of image
@@ -285,7 +307,7 @@ class ImagekitProvider extends AbstractProvider
                 default :
                     $transforms[$key] = str_replace([',', ' '], ['_', ''], $value);
                     break;
-          }
+            }
         }
 
         // aspect ratio - if set, remove height OR width parameter otherwise it

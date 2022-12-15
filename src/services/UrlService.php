@@ -13,20 +13,21 @@ namespace croxton\imgixer\services;
 use Craft;
 use craft\base\Component;
 use craft\elements\Asset;
-use craft\errors\AssetTransformException;
+use craft\errors\ImageTransformException;
+use craft\events\DefineAssetThumbUrlEvent;
 use craft\helpers\Assets;
 use craft\helpers\UrlHelper;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Image;
 use craft\models\ImageTransform;
-use craft\events\GetAssetThumbUrlEvent;
-
+use craft\events\GetThumbUrlEvent;
+use croxton\imgixer\Imgixer;
 use croxton\imgixer\models\SettingsModel;
 use croxton\imgixer\twigextensions\ImgixerTwigExtension;
 
 class UrlService extends Component
 {
-    public static $transformKeyMap = [
+    public static array $transformKeyMap = [
         'width'   => 'w',
         'height'  => 'h',
         'quality' => 'q',
@@ -38,12 +39,11 @@ class UrlService extends Component
 
     /**
      * @param Asset $asset
-     * @param ImageTransform|string|array|null $transform
+     * @param array|string|ImageTransform|null $transform
      *
      * @return string|null
-     * @throws AssetTransformException
      */
-    public function getUrl(Asset $asset, $transform)
+    public function getUrl(Asset $asset, array|string|ImageTransform|null $transform)
     {
         $assetExt = $asset->getExtension();
 
@@ -57,13 +57,13 @@ class UrlService extends Component
 
         // Look up asset transform handle
         if (is_string($transform)) {
-            $assetTransforms = Craft::$app->getAssetTransforms();
-            $transform = $assetTransforms->getTransformByHandle($transform);
+            $imageTransforms = Craft::$app->getImageTransforms();
+            $transform = $imageTransforms->getTransformByHandle($transform);
         }
 
         // If array, convert to an AssetTransform model
         if (is_array($transform)) {
-            $transform = new AssetTransform($transform);
+            $transform = new ImageTransform($transform);
         }
 
         // If image is a SVG, bail out
@@ -77,11 +77,11 @@ class UrlService extends Component
     }
 
     /**
-     * @param \craft\events\DefineAssetThumbUrlEvent $event
+     * @param DefineAssetThumbUrlEvent $event
      *
      * @return string|null
      */
-    public function getThumbUrl(\craft\events\DefineAssetThumbUrlEvent $event)
+    public function getThumbUrl(DefineAssetThumbUrlEvent $event): ?string
     {
         $url = $event->url;
         $asset = $event->asset;
@@ -109,19 +109,19 @@ class UrlService extends Component
 
     /**
      * @param Asset $asset
-     * @param AssetTransform|null $transform
-     * @see https://craftcms.com/docs/3.x/image-transforms.html
-     *
+     * @param ImageTransform|null $transform
      * @return string|null
+     *@see https://craftcms.com/docs/3.x/image-transforms.html
+     *
      */
-    public function getTransformUrl(Asset $asset, $transform)
+    public function getTransformUrl(Asset $asset, ?ImageTransform $transform): ?string
     {
         $url = null;
         $params = [];
 
-        $transformSource = \croxton\imgixer\Imgixer::getInstance()->settings->transformSource;
+        $transformSource = Imgixer::getInstance()->settings->transformSource;
 
-        if ($asset && $transformSource) {
+        if ($transformSource) {
 
             $params['source'] = $transformSource;
 
@@ -148,7 +148,7 @@ class UrlService extends Component
 
                 // Interlaced images
                 if (property_exists($transform, 'interlace')) {
-                    if (($transform->interlace != 'none')
+                    if (($transform->interlace !== 'none')
                         && (!empty($params['fm']))
                         && ($params['fm'] == 'jpg')
                     ){
