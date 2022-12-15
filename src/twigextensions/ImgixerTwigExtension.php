@@ -211,7 +211,7 @@ class ImgixerTwigExtension extends AbstractExtension
                 $params['fp-x'] = $asset->focalPoint['x'] ?? 0.5;
             }
             if (!isset($params['fp-y'])) {
-                $params['fp-x'] = $asset->focalPoint['y'] ?? 0.5;
+                $params['fp-y'] = $asset->focalPoint['y'] ?? 0.5;
             }
         }
 
