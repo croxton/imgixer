@@ -39,7 +39,9 @@ class ImgixProvider extends AbstractProvider
             $img = $source['subfolder'] .'/'. $img;
         } elseif ( ! is_string($asset) && $asset instanceof Asset) {
             $volume = $asset->getVolume();
-            $img = ltrim(trim($volume->subfolder, '/') . '/' . $img, '/');
+            if (isset($volume->subfolder) && ! empty($volume->subfolder)) {
+                 $img = ltrim(trim($volume->subfolder, '/') . '/' . $img, '/');
+            }
         }
 
         // Sign the image?
