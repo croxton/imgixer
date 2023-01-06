@@ -118,10 +118,10 @@ class UrlService extends Component
     {
         $url = null;
         $params = [];
-
+        $assetExt = $asset->getExtension();
         $transformSource = Imgixer::getInstance()->settings->transformSource;
 
-        if ($transformSource) {
+        if ($transformSource && Image::canManipulateAsImage($assetExt)) {
 
             $params['source'] = $transformSource;
 
