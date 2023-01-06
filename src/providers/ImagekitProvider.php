@@ -8,6 +8,7 @@ use croxton\imgixer\Imgixer;
 use croxton\imgixer\AbstractProvider;
 use Imgix\UrlBuilder;
 use ImageKit\ImageKit;
+use yii\base\InvalidConfigException;
 
 class ImagekitProvider extends AbstractProvider
 {
@@ -16,12 +17,13 @@ class ImagekitProvider extends AbstractProvider
      *
      * @access public
      * @param array $source The source config array
-     * @param string|Asset $asset The asset URL
+     * @param Asset|string $asset The asset URL
      * @param array $params An array of parameters
-     * @return string
+     * @return string|null
+     * @throws InvalidConfigException
      */
-    public function getUrl($source, $asset, $params) {
-
+    public function getUrl(array $source, Asset|string $asset, array $params): ?string
+    {
         // Unless setup with a custom domain, Imagekit source urls take the form https://ik.imagekit.io/render/[source]
         if ( ! isset($source['domain']) && ! isset($source['endpoint'])) {
             $source['endpoint'] = 'https://ik.imagekit.io/render/' . $source['handle'];
@@ -73,11 +75,6 @@ class ImagekitProvider extends AbstractProvider
 
         // Cleanup params
         unset($params['signed'], $params['source']);
-
-        // Merge any default params
-        if ( isset($source['defaultParams'])) {
-            $params = array_merge($source['defaultParams'], $params);
-        }
 
         // Map the formatting of our standard set of parameters to Imagekit
         $transformsPre = [];

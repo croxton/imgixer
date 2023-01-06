@@ -9,20 +9,20 @@ use Imgix\UrlBuilder;
 
 abstract class AbstractProvider
 {
-    /**
+    /**x
      * @var Asset $asset
      */
-    protected $asset;
+    protected Asset $asset;
 
     /**
      * @var string $source
      */
-    protected $source;
+    protected string $source;
 
     /**
      * @var array $source
      */
-    protected $params;
+    protected array $params;
 
     /**
      * Generate a URL for the provider
@@ -31,8 +31,8 @@ abstract class AbstractProvider
      * @param array $source The source config array
      * @param string|Asset $asset The asset URL
      * @param array $params An array of parameters
-     * @return string
+     * @return string|null
      * @throws \InvalidArgumentException
      */
-    abstract public function getUrl($source, $asset, $params);
+    abstract public function getUrl(array $source, Asset|string $asset, array $params): ?string;
 }

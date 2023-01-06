@@ -8,6 +8,7 @@ use craft\helpers\App;
 use croxton\imgixer\Imgixer;
 use croxton\imgixer\AbstractProvider;
 use Imgix\UrlBuilder;
+use yii\base\InvalidConfigException;
 
 class ServdProvider extends AbstractProvider
 {
@@ -16,12 +17,13 @@ class ServdProvider extends AbstractProvider
      *
      * @access public
      * @param array $source The source config array
-     * @param string|Asset $asset The asset URL
+     * @param Asset|string $asset The asset URL
      * @param array $params An array of parameters
-     * @return strin|null
+     * @return string|null
      * @throws \InvalidArgumentException
      */
-    public function getUrl($source, $asset, $params) {
+    public function getUrl(array $source, Asset|string $asset, array $params): ?string
+    {
 
         // Check we have an Asset
         if ( is_string($asset) || ! ($asset instanceof Asset)) {
@@ -43,9 +45,10 @@ class ServdProvider extends AbstractProvider
      * @param Asset $asset The asset
      * @param array $params An array of parameters
      * @return string|null
+     * @throws InvalidConfigException
      */
-    protected function servdTransformUrl($source, Asset $asset, $params) {
-
+    protected function servdTransformUrl(array $source, Asset $asset, array $params): ?string
+    {
         // Use Servd's ImageTransforms class
         if ( ! class_exists('\servd\AssetStorage\AssetsPlatform\ImageTransforms')) {
             return null;
@@ -54,11 +57,6 @@ class ServdProvider extends AbstractProvider
 
         // Get the filesystem
         $fs = $asset->getVolume()->getFs();
-
-        // Merge any default params
-        if ( isset($source['defaultParams'])) {
-            $params = array_merge($source['defaultParams'], $params);
-        }
 
         // Only allow params supported by Servd
         // Based on Serverless Sharp - see https://venveo.github.io/serverless-sharp/docs/usage/parameters

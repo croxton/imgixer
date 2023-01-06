@@ -7,6 +7,7 @@ use craft\elements\Asset;
 use croxton\imgixer\Imgixer;
 use croxton\imgixer\AbstractProvider;
 use Imgix\UrlBuilder;
+use yii\base\InvalidConfigException;
 
 class ImgixProvider extends AbstractProvider
 {
@@ -15,12 +16,13 @@ class ImgixProvider extends AbstractProvider
      *
      * @access public
      * @param array $source The source config array
-     * @param string|Asset $asset The asset URL
+     * @param Asset|string $asset The asset URL
      * @param array $params An array of parameters
-     * @return string
+     * @return string|null
+     * @throws InvalidConfigException
      */
-    public function getUrl($source, $asset, $params) {
-
+    public function getUrl(array $source, Asset|string $asset, array $params): ?string
+    {
         // Unless setup with a custom domain, imgix source urls take the form [source].imgix.net
         if ( ! isset($source['domain']) && ! isset($source['endpoint'])) {
             $source['endpoint'] = $source['handle'] . '.imgix.net';
@@ -64,11 +66,6 @@ class ImgixProvider extends AbstractProvider
 
         // Cleanup params
         unset($params['signed'], $params['source']);
-
-        // Merge any default params
-        if ( isset($source['defaultParams'])) {
-            $params = array_merge($source['defaultParams'], $params);
-        }
 
         $transforms = [];
 
@@ -118,7 +115,8 @@ class ImgixProvider extends AbstractProvider
      * @param string|null $key An optional key used to sign images
      * @return string
      */
-    protected function buildImgixUrl($endpoint, $img, $params=array(), $key=null) {
+    protected function buildImgixUrl(string $endpoint, string $img, array $params=array(), string $key=null) : string
+    {
         // build image URL
         $builder = new UrlBuilder($endpoint);
         $builder->setUseHttps(true);
