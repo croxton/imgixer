@@ -12,17 +12,17 @@ abstract class AbstractProvider
     /**
      * @var Asset $asset
      */
-    protected $asset;
+    protected Asset $asset;
 
     /**
      * @var string $source
      */
-    protected $source;
+    protected string $source;
 
     /**
      * @var array $source
      */
-    protected $params;
+    protected array $params;
 
     /**
      * Generate a URL for the provider
@@ -31,32 +31,8 @@ abstract class AbstractProvider
      * @param array $source The source config array
      * @param string|Asset $asset The asset URL
      * @param array $params An array of parameters
-     * @return string
+     * @return string|null
      * @throws \InvalidArgumentException
      */
-    abstract public function getUrl($source, $asset, $params);
-
-    /**
-     * Build an Imgix URL
-     *
-     * @access protected
-     * @param string $domain The Imgix source domain
-     * @param string $img The image path
-     * @param array $params An array of Imgix parameters
-     * @param string|null $key An optional key used to sign images
-     * @return string
-     */
-    protected function buildImgixUrl($domain, $img, $params=array(), $key=null)
-    {
-        // build image URL
-        $builder = new UrlBuilder($domain);
-        $builder->setUseHttps(true);
-
-        if ($key !== null)
-        {
-            $builder->setSignKey($key);
-        }
-
-        return $builder->createURL($img, $params);
-    }
+    abstract public function getUrl(array $source, Asset|string $asset, array $params): ?string;
 }

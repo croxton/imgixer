@@ -37,14 +37,14 @@ class ImgixerTwigExtension extends AbstractExtension
      *
      * @var        array
      */
-    private $sources;
+    private array $sources;
 
     /**
      * The default source to use
      *
      * @var        string
      */
-    private $default_source;
+    private string|int|null $default_source;
 
 
     /**
@@ -52,7 +52,7 @@ class ImgixerTwigExtension extends AbstractExtension
      *
      * @var        string
      */
-    private $default_provider;
+    private string $default_provider;
 
     /**
      * Constructor
@@ -76,7 +76,7 @@ class ImgixerTwigExtension extends AbstractExtension
      *
      * @return string The extension name
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Imgixer';
     }
@@ -88,7 +88,7 @@ class ImgixerTwigExtension extends AbstractExtension
      *
      * @return array
      */
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
             new \Twig\TwigFilter('imgix', [$this, 'imgix']),
@@ -102,7 +102,7 @@ class ImgixerTwigExtension extends AbstractExtension
      *
      * @return array
      */
-    public function getFunctions()
+    public function getFunctions(): array
     {
         return [
             new \Twig\TwigFunction('imgix', [$this, 'imgix']),
@@ -113,12 +113,27 @@ class ImgixerTwigExtension extends AbstractExtension
      * Generate src and srcset values, optionally for a range of image sizes
      *
      * @access public
-     * @param string $img The asset URL
+     * @param string|Asset $img The asset
      * @param array $params An array of Imgix parameters
      * @return string
      */
-    public function imgix($img, $params=array())
+    public function imgix(Asset|string $img, array $params=array()): string
     {
+        // Register source
+        $source  = isset($params['source']) ? (string) $params['source'] : $this->default_source;
+        if ( ! isset($this->sources[$source])) {
+            throw new \InvalidArgumentException('The `' .$source . '` source is not defined in your config.');
+        }
+
+        // Merge any default params
+        if ( isset($this->sources[$source]['defaultParams'])) {
+            $params = array_merge($this->sources[$source]['defaultParams'], $params);
+        }
+
+        // Make sure we have a handle
+        $this->sources[$source]['handle'] = $source;
+
+        // srcset generation
         $srcset = [];
         $from  = isset($params['from']) ? (int) $params['from'] : false;
         $to  = isset($params['to']) ? (int) $params['to'] : false;
@@ -129,12 +144,12 @@ class ImgixerTwigExtension extends AbstractExtension
         if ($from && $to) {
             foreach (range($from, $to, $step) as $number) {
                 $params['w'] = $number;
-                if ($src = $this->buildUrl($img, $params)) {
+                if ($src = $this->buildUrl($this->sources[$source], $img, $params)) {
                     $srcset[] =  $src . ' ' .$number . 'w';
                 }
             }
         } else {
-            $srcset[] = $this->buildUrl($img, $params);
+            $srcset[] = $this->buildUrl($this->sources[$source], $img, $params);
         }
 
         return implode(',', $srcset);
@@ -144,25 +159,70 @@ class ImgixerTwigExtension extends AbstractExtension
      * Build an image transform URL
      *
      * @access protected
+     * @param array $source The source config
      * @param string|Asset $asset The asset URL
-     * @param array $params An array of Imgix parameters
+     * @param array $params An array of parameters
      * @return string|null
-     * @throws \InvalidArgumentException
      */
-    protected function buildUrl($asset, $params=array())
+    protected function buildUrl(array $source, Asset|string $asset, array $params=array()): ?string
     {
-        // Source
-        $source  = isset($params['source']) ? (string) $params['source'] : $this->default_source;
-        if ( ! isset($this->sources[$source])) {
-            throw new \InvalidArgumentException('The `' .$source . '` Imgix source is not defined in your config.');
-        }
-        $this->sources[$source]['handle'] = $source;
-
         // Provider
-        $provider  = isset($this->sources[$source]['provider']) ? (string) $this->sources[$source]['provider'] : $this->default_provider;
+        $provider  = isset($source['provider']) ? (string) $source['provider'] : $this->default_provider;
+
+        // Legacy - if provider is Servd but using an Imgix domain, we can safely use the Imgix provider
+        if ($provider === 'servd' && ( isset($source['domain']) || isset($source['endpoint']) )) {
+            $provider = 'imgix';
+        }
         $providerClass = '\croxton\imgixer\providers\\' . ucfirst($provider) .'Provider';
 
         // Build URL using the selected provider
-        return (new $providerClass())->getUrl($this->sources[$source], $asset, $params);
+        return (new $providerClass())->getUrl($source, $asset, $this->formatParams($params, $asset));
+    }
+
+    /**
+     * Core parameter formatting
+     *
+     * @param array $params
+     * @param string|Asset $asset The asset URL
+     * @return array
+     */
+    protected function formatParams(array $params, Asset|string $asset): array
+    {
+        if (!$asset instanceof Asset) {
+            return $params;
+        }
+
+        // Predictable focalpoint crops
+        if ( isset($params['fit'], $params['crop']) && $params['fit'] === 'crop' && $params['crop'] === 'focalpoint') {
+
+            $ar = $asset->width / $asset->height;
+            if (isset($params['ar'])) {
+                // get aspect ratio, if supplied
+                $ar = explode(':', $params['ar']);
+                if (isset($ar[0],$ar[1])) {
+                    $ar = $ar[0] / $ar[1];
+                }
+            }
+
+            // make sure we have both width and height set, if we only have one
+            if (isset($params['w']) && !isset($params['h'])) {
+                $params['h'] = (int) $params['w'] / $ar;
+            } elseif (isset($params['h']) && !isset($params['w'])) {
+                $params['w'] = (int) $params['h'] * $ar;
+            } elseif(!isset($params['w'],$params['h'])) {
+                $params['w'] = (int) $asset->width;
+                $params['h'] = (int) $asset->width / $ar;
+            }
+
+            // Populate fp-x fp-y params from the asset, if not supplied
+            if (!isset($params['fp-x'])) {
+                $params['fp-x'] = $asset->focalPoint['x'] ?? 0.5;
+            }
+            if (!isset($params['fp-y'])) {
+                $params['fp-y'] = $asset->focalPoint['y'] ?? 0.5;
+            }
+        }
+
+        return $params;
     }
 }

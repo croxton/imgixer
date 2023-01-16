@@ -13,6 +13,10 @@ namespace croxton\imgixer;
 use Craft;
 use craft\base\Model;
 use craft\base\Plugin;
+use craft\elements\Asset;
+use craft\events\DefineAssetThumbUrlEvent;
+use craft\events\DefineAssetUrlEvent;
+use craft\events\GenerateTransformEvent;
 use craft\services\Plugins;
 use craft\events\PluginEvent;
 use craft\events\GetAssetUrlEvent;
@@ -50,7 +54,7 @@ class Imgixer extends Plugin
      *
      * @var Imgixer
      */
-    public static $plugin;
+    public static Imgixer $plugin;
 
     // Public Properties
     // =========================================================================
@@ -76,7 +80,7 @@ class Imgixer extends Plugin
      * you do not need to load it in your init() method.
      *
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         self::$plugin = $this;
@@ -103,12 +107,15 @@ class Imgixer extends Plugin
         // Replace transforms?
         if ($this->settings->transformSource !== null) {
 
-            // Handler: Assets::EVENT_GET_ASSET_URL
+            // Handler: Assets::EVENT_DEFINE_URL
             Event::on(
-                Assets::class,
-                \craft\elements\Asset::EVENT_DEFINE_URL,
-                function (\craft\events\DefineAssetUrlEvent $event) {
-                    $event->url = $this->urlService->getUrl($event->asset, $event->transform);
+                Asset::class,
+                Asset::EVENT_DEFINE_URL,
+                function (DefineAssetUrlEvent $event) {
+                    $event->url = $this->urlService->getUrl($event->sender, $event->transform);
+                    if ($event->url) {
+                        $event->handled = true;
+                    }
                 }
             );
 
@@ -116,8 +123,23 @@ class Imgixer extends Plugin
             Event::on(
                 Assets::class,
                 Assets::EVENT_DEFINE_THUMB_URL,
-                function (\craft\events\DefineAssetThumbUrlEvent $event) {
+                function (DefineAssetThumbUrlEvent $event) {
                     $event->url = $this->urlService->getThumbUrl($event);
+                    if ($event->url) {
+                        $event->handled = true;
+                    }
+                }
+            );
+
+            // Handler: Asset::EVENT_BEFORE_GENERATE_TRANSFORM
+            Event::on(
+                Asset::class,
+                Asset::EVENT_BEFORE_GENERATE_TRANSFORM,
+                function (GenerateTransformEvent $event) {
+                    $event->url = $this->urlService->getUrl($event->asset, $event->transform);
+                    if ($event->url) {
+                        $event->handled = true;
+                    }
                 }
             );
 
