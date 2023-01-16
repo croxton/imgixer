@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.1.0-beta.1 - 2023.01.16
+### Added
+- Added [ImageKit](https://imagekit.io/) as an optional image transform provider.
+- Defined `core` and `extended` parameter sets for supported providers.
+- Focal point parameters (`fp-x` and `fp-y`) are now set automatically from the Asset (if not otherwise specified) when using `crop:'focalpoint'` (#8)
+- Improved native transform support and thumbnail generation in the control panel.
+### Fixed
+- Default parameters now work properly.
+### Changed
+- Updated docs.
+
 ## 2.0.0-beta.1 - 2022.06.26
 - Craft 4 version.
 
