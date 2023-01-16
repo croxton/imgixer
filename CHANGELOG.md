@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Added
 - Added [ImageKit](https://imagekit.io/) as an optional image transform provider.
 - Defined `core` and `extended` parameter sets for supported providers.
-- Focal point parameters (`fp-x` and `fp-y`) are now set automatically from the Asset (if not otherwise specified) when using `crop:'focalpoint'` ([#8](https://github.com/croxton/imgixer/issues/8))
+- Added support for images served from local filesystem subfolders ([#7](https://github.com/croxton/imgixer/issues/7)).
+- Focal point parameters (`fp-x` and `fp-y`) are now set automatically from the Asset (if not otherwise specified) when using `crop:'focalpoint'` ([#8](https://github.com/croxton/imgixer/issues/8)).
 - Improved native transform support and thumbnail generation in the control panel.
 ### Fixed
 - Default parameters now work properly.
