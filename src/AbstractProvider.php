@@ -9,7 +9,7 @@ use Imgix\UrlBuilder;
 
 abstract class AbstractProvider
 {
-    /**x
+    /**
      * @var Asset $asset
      */
     protected Asset $asset;
