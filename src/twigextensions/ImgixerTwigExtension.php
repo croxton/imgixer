@@ -188,7 +188,7 @@ class ImgixerTwigExtension extends AbstractExtension
      */
     protected function formatParams(array $params, Asset|string $asset): array
     {
-        if (!$asset instanceof Asset) {
+        if (!$asset instanceof Asset || !isset($asset->width, $asset->height)) {
             return $params;
         }
 
