@@ -45,6 +45,19 @@ class UrlService extends Component
      */
     public function getUrl(Asset $asset, array|string|ImageTransform|null $transform)
     {
+        // Asset previews are reved as of 4.3.8.1, breaking already-signed URLs :(
+        // => see https://github.com/craftcms/cms/commit/ce782ab4
+        // Let Craft handle file previews and the image editor for now,
+        // until there is a proper fix
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $p = Craft::$app->getRequest()->getParam('p');
+            if ($p) {
+                if ( str_contains($p, 'edit-image') ||  str_contains($p, 'preview-file')) {
+                    return null;
+                }
+            }
+        }
+
         $assetExt = $asset->getExtension();
 
         if (empty($transform)) {
