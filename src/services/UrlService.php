@@ -50,7 +50,7 @@ class UrlService extends Component
         // Let Craft handle file previews and the image editor for now,
         // until there is a proper fix
         if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $p = Craft::$app->getRequest()->getParam('p');
+            $p = Craft::$app->getRequest()->getFullPath();
             if ($p) {
                 if ( str_contains($p, 'edit-image') ||  str_contains($p, 'preview-file')) {
                     return null;
