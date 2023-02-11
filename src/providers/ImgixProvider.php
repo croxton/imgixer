@@ -34,8 +34,9 @@ class ImgixProvider extends AbstractProvider
         $img = $asset;
         if ( ! is_string($asset) && $asset instanceof Asset) {
             $img = $asset->path;
-            // when an image has been modified, ensure a new imgix version is generated
-            $params['dm'] = $asset->dateModified->getTimestamp();
+            // Add a version hash based on the last modified date.
+            // Note that Craft will append this automatically if we leave it off.
+            $params = array_merge($params, \craft\helpers\Assets::revParams($asset));
         }
 
         // Prefix img path with subfolder, if defined

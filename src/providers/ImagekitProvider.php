@@ -24,6 +24,9 @@ class ImagekitProvider extends AbstractProvider
      */
     public function getUrl(array $source, Asset|string $asset, array $params): ?string
     {
+        // Versioning
+        $revParams = [];
+
         // Unless setup with a custom domain, Imagekit source urls take the form https://ik.imagekit.io/render/[source]
         if ( ! isset($source['domain']) && ! isset($source['endpoint'])) {
             $source['endpoint'] = 'https://ik.imagekit.io/render/' . $source['handle'];
@@ -39,12 +42,31 @@ class ImagekitProvider extends AbstractProvider
             throw new \InvalidArgumentException('The `' .$source['handle'] . '` keys are not defined in your config.');
         }
 
+        // Sign the image?
+        if ( isset($params['signed'])) {
+            $signed = (bool) $params['signed'];
+        } else {
+            $signed = isset($source['signed']) ? (bool) $source['signed'] : false;
+        }
+
+        // In the CP, file previews and image editor URLs are further urlencoded,
+        // which breaks already-signed images - we have to let Craft handle these
+        if ($signed && Craft::$app->getRequest()->getIsCpRequest()) {
+            $p = Craft::$app->getRequest()->getFullPath();
+            if ($p) {
+                if ( str_contains($p, 'edit-image') ||  str_contains($p, 'preview-file')) {
+                    return null; // bail
+                }
+            }
+        }
+
         // Image path
         $img = $asset;
         if ( ! is_string($asset) && $asset instanceof Asset) {
             $img = $asset->path;
-            // when an image has been modified, ensure a new version is generated
-            $params['dm'] = $asset->dateModified->getTimestamp();
+            // Add a version hash based on the last modified date.
+            // Note that Craft will append this automatically if we leave it off.
+            $revParams = \craft\helpers\Assets::revParams($asset);
         }
 
         // Prefix img path with subfolder, if defined
@@ -64,13 +86,6 @@ class ImagekitProvider extends AbstractProvider
                 array_shift($img);
                 $img = implode('/', $img);
             }
-        }
-
-        // Sign the image?
-        if ( isset($params['signed'])) {
-            $signed = (bool) $params['signed'];
-        } else {
-            $signed = isset($source['signed']) ? (bool) $source['signed'] : false;
         }
 
         // Cleanup params
@@ -330,7 +345,8 @@ class ImagekitProvider extends AbstractProvider
             'transformation' => array($transformsPre, $transforms, $transformsPost),
             'transformationPosition' => 'query',
             'seoFriendly' => true,
-            'signed' => $signed
+            'signed' => $signed,
+            'queryParameters' => $revParams
         ]);
     }
 }
