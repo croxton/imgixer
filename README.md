@@ -115,13 +115,6 @@ return [
 ];
 ```
 
-### A note about asset purging
-When an image is edited in the control panel using Craft's image editor, Imgixer does NOT automatically issue an API request to the image provider to purge the corresponding URL from it's CDN. From the [Imgix docs](https://docs.imgix.com/setup/purging-assets):
-
-      To absolutely ensure compliance for an updated asset, it is best to give the asset a new path by renaming the file. Purging an asset is only recommended when absolutely necessary.
-
-Please ask your editors to always 'Save as a new asset' when editing an image in the control panel. If the image editor was invoked from an entry, the entry asset field will be automatically updated to link to the new asset.
-
 ## Using Imgixer
 
 ```twig
@@ -441,6 +434,13 @@ return [
 {{'https://www.another-proxied-website.com/uploads/another-image.jpg' | imgix({ source:'my-proxy', ar:'3:2', w:1200, signed: true }) }}
 
 ```
+
+### Asset purging
+When an image is edited in the control panel using Craft's image editor, Imgixer does NOT automatically issue an API request to the image provider to purge the corresponding URL from it's CDN. From the [Imgix docs](https://docs.imgix.com/setup/purging-assets):
+
+> To absolutely ensure compliance for an updated asset, it is best to give the asset a new path by renaming the file. Purging an asset is only recommended when absolutely necessary.
+
+Please ask your editors to always 'Save as a new asset' when editing an image in the control panel. If the image editor was invoked from an entry, the entry asset field will be automatically updated to link to the new asset.
    
 
 
