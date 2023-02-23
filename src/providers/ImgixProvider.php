@@ -35,7 +35,7 @@ class ImgixProvider extends AbstractProvider
         if ( ! is_string($asset) && $asset instanceof Asset) {
             $img = $asset->path;
             // Add a version hash based on the last modified date.
-            $params = array_merge($params, \craft\helpers\Assets::revParams($asset));
+            $params['v'] = $asset->dateModified->getTimestamp();
         }
 
         // Prefix img path with subfolder, if defined
