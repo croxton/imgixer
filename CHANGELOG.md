@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.1.1 - 2023.02.23
+### Added
+- Use Craft's own versioning helper for revving asset URLs. 
+- Stable release.
+
 ## 2.1.0-beta.1 - 2023.01.16
 ### Added
 - Added [ImageKit](https://imagekit.io/) as an optional image transform provider.
@@ -11,8 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Added support for images served from local filesystem subfolders ([#7](https://github.com/croxton/imgixer/issues/7)).
 - Focal point parameters (`fp-x` and `fp-y`) are now set automatically from the Asset (if not otherwise specified) when using `crop:'focalpoint'` ([#8](https://github.com/croxton/imgixer/issues/8)).
 - Improved native transform support and thumbnail generation in the control panel.
+- 
 ### Fixed
 - Default parameters now work properly.
+- 
 ### Changed
 - These source parameters have been changed (the old parameters are still supported, no changes are required to existing projects):
     - `domain` is now `endpoint`
