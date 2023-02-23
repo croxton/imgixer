@@ -49,23 +49,11 @@ class ImagekitProvider extends AbstractProvider
             $signed = isset($source['signed']) ? (bool) $source['signed'] : false;
         }
 
-        // In the CP, file previews and image editor URLs are further urlencoded,
-        // which breaks already-signed images - we have to let Craft handle these
-        if ($signed && Craft::$app->getRequest()->getIsCpRequest()) {
-            $p = Craft::$app->getRequest()->getFullPath();
-            if ($p) {
-                if ( str_contains($p, 'edit-image') ||  str_contains($p, 'preview-file')) {
-                    return null; // bail
-                }
-            }
-        }
-
         // Image path
         $img = $asset;
         if ( ! is_string($asset) && $asset instanceof Asset) {
             $img = $asset->path;
             // Add a version hash based on the last modified date.
-            // Note that Craft will append this automatically if we leave it off.
             $revParams = \craft\helpers\Assets::revParams($asset);
         }
 

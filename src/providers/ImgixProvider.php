@@ -35,7 +35,6 @@ class ImgixProvider extends AbstractProvider
         if ( ! is_string($asset) && $asset instanceof Asset) {
             $img = $asset->path;
             // Add a version hash based on the last modified date.
-            // Note that Craft will append this automatically if we leave it off.
             $params = array_merge($params, \craft\helpers\Assets::revParams($asset));
         }
 
