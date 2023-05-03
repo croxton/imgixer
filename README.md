@@ -245,7 +245,7 @@ Create a source in `imgixer.php` config, adding `servd` as the asset provider. A
 ```php
 'my-servd-assets' => array(
    'provider' => 'servd',
-   'endpoint' => , 'https://my-served-project-slug.transforms.svdcdn.com'
+   'endpoint' => 'https://my-served-project-slug.transforms.svdcdn.com',
    'defaultParams' => array(
        'auto' => 'format',
        'fit' => 'crop',
