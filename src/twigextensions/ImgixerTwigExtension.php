@@ -171,7 +171,10 @@ class ImgixerTwigExtension extends AbstractExtension
 
         // Legacy - if provider is Servd but using an Imgix domain, we can safely use the Imgix provider
         if ($provider === 'servd' && ( isset($source['domain']) || isset($source['endpoint']) )) {
-            $provider = 'imgix';
+            $endpoint = $source['endpoint'] ?? $source['domain'] ?? null;
+            if ($endpoint && str_contains($endpoint, 'imgix.net')) {
+                $provider = 'imgix';
+            }
         }
         $providerClass = '\croxton\imgixer\providers\\' . ucfirst($provider) .'Provider';
 

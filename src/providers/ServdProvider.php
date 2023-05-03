@@ -24,6 +24,12 @@ class ServdProvider extends AbstractProvider
      */
     public function getUrl(array $source, Asset|string $asset, array $params): ?string
     {
+        // v3 supports custom endpoints
+        if ( ! isset($source['domain']) && ! isset($source['endpoint'])) {
+            $source['endpoint'] = 'https://optimise2.assets-servd.host'; // default in v2
+        } elseif (isset($source['domain'])) {
+            $source['endpoint'] = $source['domain'];
+        }
 
         // Check we have an Asset
         if ( is_string($asset) || ! ($asset instanceof Asset)) {
@@ -115,6 +121,6 @@ class ServdProvider extends AbstractProvider
         }
 
         // Otherwise
-        return 'https://optimise2.assets-servd.host/' . $fullPath . '&s=' . $signingKey;
+        return rtrim($source['endpoint'], '/') . '/' . $fullPath . '&s=' . $signingKey;
     }
 }

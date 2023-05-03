@@ -69,10 +69,17 @@ class ImagekitProvider extends AbstractProvider
 
             // Do we have a Servd filesystem?
             if (get_class($fs) === 'servd\AssetStorage\AssetsPlatform\Fs') {
-                // remove the project slug prefix
-                $img = explode('/', $img);
-                array_shift($img);
-                $img = implode('/', $img);
+                $servdSettings = \servd\AssetStorage\Plugin::$plugin->getSettings();
+                $v3 = false;
+                if(isset($servdSettings::$CURRENT_TYPE) && $servdSettings::$CURRENT_TYPE === 'wasabi') { // wasabi is v3
+                    $v3 = true;
+                }
+                if ($v3 === false) {
+                    // v2: remove the project slug prefix
+                    $img = explode('/', $img);
+                    array_shift($img);
+                    $img = implode('/', $img);
+                }
             }
         }
 
