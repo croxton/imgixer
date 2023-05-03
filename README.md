@@ -176,16 +176,38 @@ There are several ways to use Imgixer with [Servd.host](https://servd.host) asse
 With either option, you will first need to install [Servd Assets and Helpers](https://github.com/servdhost/craft-asset-storage).
 
 ### 1. Using an Imgix Web Folder source
-  
-* Set up a Web Folder source in Imgix with the base URL set to Servd's CDN URL for your project, e.g. `https://cdn2.assets-servd.host/my-served-project-slug`.
+
+#### Servd Assets Platform v2
+* Set up a `Web Folder` source in Imgix with the base URL set to Servd's CDN URL for your project, e.g. `https://cdn2.assets-servd.host/my-served-project-slug`.
 
 * Recommended: tick the option to use secure URLs and make a note of the key.
   
-* Create a source in `imgixer.php` config, adding `servd` as the asset transform provider:
+* Create a new source in `imgixer.php` config:
 
 ```php
 'my-servd-web-folder' => array(
-   'provider' => 'servd',
+   'provider' => 'imgix',
+   'endpoint' => 'my-domain.imgix.net',
+   'privateKey' => '12345',
+   'signed' => true,
+   'defaultParams' => array(
+       'auto' => 'compress,format',
+       'fit' => 'crop',
+       'q' => '80'
+   )
+),
+```
+
+#### Servd Assets Platform v3
+* Set up a `Web Folder` source in Imgix with the base URL set to Servd's *file* domain for your project e.g. `https://my-served-project-slug.files.svdcdn.com` (if you have set up a custom file domain, use that instead).
+
+* Recommended: tick the option to use secure URLs and make a note of the key.
+
+* Create a new source in `imgixer.php` config:
+
+```php
+'my-servd-web-folder' => array(
+   'provider' => 'imgix',
    'endpoint' => 'my-domain.imgix.net',
    'privateKey' => '12345',
    'signed' => true,
@@ -199,13 +221,31 @@ With either option, you will first need to install [Servd Assets and Helpers](ht
 
 ### 2. Use Servd's own image transformation service
 
-Servd provides its own image transformation service (https://optimise2.assets-servd.host) that supports a subset of Imgix's Rendering API and covers the majority of use cases. If you are hosting with Servd it may be all you need.
+Servd's Asset Platform provides an image transformation service that supports a subset of Imgix's Rendering API and covers the majority of use cases. If you are hosting with Servd it may be all you need.
 
-Create a source in `imgixer.php` config, adding `servd` as the asset provider. Do not set a domain:
+#### Servd Assets Platform v2
+
+Create a source in `imgixer.php` config, adding `servd` as the asset provider. Do not set an endpoint:
 
 ```php
 'my-servd-assets' => array(
    'provider' => 'servd',
+   'defaultParams' => array(
+       'auto' => 'format',
+       'fit' => 'crop',
+       'q' => '80'
+   )
+),
+```
+
+#### Servd Assets Platform v3
+
+Create a source in `imgixer.php` config, adding `servd` as the asset provider. Add Servd's *transform* domain as the endpoint for the source (if you have set up a custom transform domain, use that instead).
+
+```php
+'my-servd-assets' => array(
+   'provider' => 'servd',
+   'endpoint' => , 'https://my-served-project-slug.transforms.svdcdn.com'
    'defaultParams' => array(
        'auto' => 'format',
        'fit' => 'crop',
