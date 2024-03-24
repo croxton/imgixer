@@ -1,4 +1,4 @@
-# Imgixer plugin for Craft CMS 4.x
+# Imgixer plugin for Craft CMS 5.x
 
 Generate image transformation URLs that work with [Imgix](https://imgix.com), [Imagekit](https://imagekit.io) and [Servd](https://servd.host).
 
@@ -11,7 +11,7 @@ Generate image transformation URLs that work with [Imgix](https://imgix.com), [I
 
 ## Requirements
 
-This plugin requires Craft CMS 4.0.0 or later.
+This plugin requires Craft CMS 5.0.0-beta.1 or later.
 
 ## Installation
 

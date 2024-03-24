@@ -2,7 +2,7 @@
     "name": "croxton/imgixer",
     "description": "Generate Imgix URLs.",
     "type": "craft-plugin",
-    "version": "2.1.3",
+    "version": "3.0.0-beta.1",
     "keywords": [
         "craft",
         "cms",
@@ -12,7 +12,7 @@
         "imgix"
     ],
     "support": {
-        "docs": "https://github.com/croxton/imgixer/blob/master/README.md",
+        "docs": "https://github.com/croxton/imgixer/blob/develop-v5/README.md",
         "issues": "https://github.com/croxton/imgixer/issues",
         "source": "https://github.com/croxton/imgixer"
     },
@@ -24,7 +24,7 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^4.0",
+        "craftcms/cms": "^5.0.0-beta.1",
         "imgix/imgix-php": "~3.1.0",
         "imagekit/imagekit": "^3.0"
     },
@@ -46,5 +46,9 @@
             "yiisoft/yii2-composer": true,
             "craftcms/plugin-installer": true
         }
+    },
+    "require-dev": {
+        "craftcms/rector": "dev-main",
+        "craftcms/phpstan": "dev-main"
     }
 }

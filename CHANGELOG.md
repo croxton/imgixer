@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 3.0.0-beta.1 - 2023.03.24
+- Craft 5 version
+
 ## 2.1.3 - 2023.05.03
 ### Added
 - Support for Servd's Asset Platform v3.
