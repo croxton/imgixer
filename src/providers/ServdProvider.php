@@ -166,6 +166,19 @@ class ServdProvider extends AbstractProvider
         $volume = $asset->getVolume();
         $img = ltrim(trim($volume->subfolder, '/') . '/' . $img, '/');
 
+        // format image path
+        $servdSettings = \servd\AssetStorage\Plugin::$plugin->getSettings();
+        $v3 = false;
+        if(isset($servdSettings::$CURRENT_TYPE) && $servdSettings::$CURRENT_TYPE === 'wasabi') { // wasabi is v3
+            $v3 = true;
+        }
+        if ($v3 === false) {
+            // v2: remove the project slug prefix
+            $img = explode('/', $img);
+            array_shift($img);
+            $img = implode('/', $img);
+        }
+
         // Sign the image?
         if ( isset($params['signed'])) {
             $signed = (bool) $params['signed'];
