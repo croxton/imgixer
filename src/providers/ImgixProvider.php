@@ -47,6 +47,24 @@ class ImgixProvider extends AbstractProvider
             $img = ltrim(trim($volume->subfolder, '/') . '/' . $img, '/');
         }
 
+        // Is the asset in a Servd filesystem?
+        if ( ! is_string($asset) && $asset instanceof Asset) {
+            $volume = $asset->getVolume();
+            if ($volume::class === 'servd\AssetStorage\Volume') {
+                $servdSettings = \servd\AssetStorage\Plugin::$plugin->getSettings();
+                $v3 = false;
+                if (isset($servdSettings::$CURRENT_TYPE) && $servdSettings::$CURRENT_TYPE === 'wasabi') { // wasabi is v3
+                    $v3 = true;
+                }
+                if ($v3 === false) {
+                    // v2: remove the project slug prefix
+                    $img = explode('/', $img);
+                    array_shift($img);
+                    $img = implode('/', $img);
+                }
+            }
+        }
+
         // Sign the image?
         if ( isset($params['signed'])) {
             $signed = (bool) $params['signed'];
