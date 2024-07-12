@@ -17,10 +17,37 @@ class ServdProvider extends AbstractProvider
      * @param array $source The source config array
      * @param string|Asset $asset The asset URL
      * @param array $params An array of parameters
-     * @return strin|null
+     * @return string
      * @throws \InvalidArgumentException
      */
     public function getUrl($source, $asset, $params) {
+
+        if ( ! class_exists('\servd\AssetStorage\Plugin')) {
+            throw new \InvalidArgumentException('The Servd plugin must be installed.');
+        }
+
+        // Determine the endpoint, if not provided in config
+        if ( ! isset($source['endpoint'])) {
+            // support legacy 'domain' key
+            if (isset($source['domain'])) {
+                $source['endpoint'] = $source['domain'];
+            } else {
+
+                // no custom endpoint provided, which Servd assets platform are we using?
+                $servdSettings = \servd\AssetStorage\Plugin::$plugin->getSettings();
+                $v3 = false;
+                if(isset($servdSettings::$CURRENT_TYPE) && $servdSettings::$CURRENT_TYPE === 'wasabi') { // wasabi is v3
+                    $v3 = true;
+                }
+                if ($v3 === false) {
+                    // default in v2
+                    $source['endpoint'] = 'https://optimise2.assets-servd.host';
+                } else {
+                    // default in v3
+                    $source['endpoint'] = 'https://' . $servdSettings->getProjectSlug() . '.transforms.svdcdn.com';
+                }
+            }
+        }
 
         // Check we have an Asset
         if ( is_string($asset) || ! ($asset instanceof Asset)) {
@@ -30,8 +57,8 @@ class ServdProvider extends AbstractProvider
         // Add timestamp
         $params['dm'] = $asset->dateUpdated->getTimestamp();
 
-        // Check we have a domain
-        if ( isset($source['domain'])) {
+        // If provider is Servd but using an Imgix domain, we can safely use the Imgix provider
+        if (strpos($source['endpoint'], 'imgix.net')) {
             // Yes - we'll assume we're using an Imgix web folder or proxy source
             return $this->servdImgixUrl($source, $asset, $params);
         } else {
@@ -66,8 +93,30 @@ class ServdProvider extends AbstractProvider
         }
 
         // Only allow params supported by Servd
+        // Based on Serverless Sharp - see https://venveo.github.io/serverless-sharp/docs/usage/parameters
         $allowedParams = array_flip(array('w', 'h', 'q', 'fm', 'auto', 'fit', 'crop', 'fp-x', 'fp-y', 'fill-color', 'dpr', 'ar', 'dm'));
         $params = array_intersect_key($params, $allowedParams);
+
+        // Servd does not support faces / facearea
+        // Use the image's focalpoint as a fallback (if defined)
+        if (isset($params['crop']) && strpos($params['crop'], "faces")) {
+            $params['fit'] = 'crop';
+            $params['crop'] = 'focalpoint';
+        }
+        if (isset($params['fit']) && strpos($params['fit'], "facearea")) {
+            $params['fit'] = 'crop';
+            $params['crop'] = 'focalpoint';
+        }
+
+        // Servd does not support fillmax
+        if (isset($params['fit']) && strpos($params['fit'], "fillmax")) {
+            $params['fit'] = 'fill';
+        }
+
+        // make sure fit="fill" when fill-color is specified
+        if (isset($params['fill-color']) && !isset($params['fit'])) {
+            $params['fit'] = 'fill';
+        }
 
         // Full path of asset on the CDN platform
         $fullPath = $imageTransforms->getFullPathForAssetAndTransform($asset, $params);
@@ -98,7 +147,7 @@ class ServdProvider extends AbstractProvider
         }
 
         // Otherwise
-        return 'https://optimise2.assets-servd.host/' . $fullPath . '&s=' . $signingKey;
+        return rtrim($source['endpoint'], '/') . '/' . $fullPath . '&s=' . $signingKey;
     }
 
     /**
@@ -140,6 +189,6 @@ class ServdProvider extends AbstractProvider
         }
 
         // Build Imgix URL
-        return $this->buildImgixUrl($source['domain'], $img, $params, $key);
+        return $this->buildImgixUrl($source['endpoint'], $img, $params, $key);
     }
 }

@@ -99,8 +99,8 @@ class Imgixer extends Plugin
             }
         );
 
-        // Replace transforms?
-        if ($this->settings->transformSource !== null) {
+        // Replace transforms? Servd uses it's own transform handler
+        if ($this->settings->transformSource !== null && $this->settings->transformSource !== 'servd') {
 
             // Handler: Assets::EVENT_GET_ASSET_URL
             Event::on(

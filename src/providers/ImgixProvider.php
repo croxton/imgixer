@@ -21,9 +21,14 @@ class ImgixProvider extends AbstractProvider
      */
     public function getUrl($source, $asset, $params) {
 
-        // Unless setup with a custom domain, imgix source urls take the form [source].imgix.net
-        if ( ! isset($source['domain'])) {
-            $source['domain'] = $source['handle'] . '.imgix.net';
+        // support legacy 'domain' key
+        if ( isset($source['domain']) && ! isset($source['endpoint'])) {
+            $source['endpoint'] = $source['domain'];
+        }
+
+        // Default fallback: unless setup with a custom domain, imgix source urls take the form [source].imgix.net
+        if ( ! isset($source['endpoint'])) {
+            $source['endpoint'] = $source['handle'] . '.imgix.net';
         }
 
         // Image path
@@ -46,7 +51,7 @@ class ImgixProvider extends AbstractProvider
         if ( isset($params['signed'])) {
             $signed = (bool) $params['signed'];
         } else {
-            $signed = isset($source['signed']) ? (bool) $source['signed'] : false;
+            $signed = isset($source['signed']) && $source['signed'];
         }
 
         // Cleanup params
@@ -65,6 +70,6 @@ class ImgixProvider extends AbstractProvider
         }
 
         // Build Imgix URL
-        return $this->buildImgixUrl($source['domain'], $img, $params, $key);
+        return $this->buildImgixUrl($source['endpoint'], $img, $params, $key);
     }
 }
