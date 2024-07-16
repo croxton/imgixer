@@ -4,8 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## 3.0.0-beta.1 - 2023.03.24
-- Craft 5 version
+## 3.0.1 - 2024.07.16
+### Added
+- Added a `craft` provider to generate native Craft transforms using Imgixer's core parameter set.
+- Stable release.
+
+## 3.0.0-beta.1 - 2024.03.24
+- Craft 5 version.
 
 ## 2.1.3 - 2023.05.03
 ### Added
