@@ -48,11 +48,8 @@ class UrlService extends Component
         $assetExt = $asset->getExtension();
 
         if (empty($transform)) {
-            $transform = new ImageTransform([
-                'height' => $asset->height,
-                'width' => $asset->width,
-                'interlace' => 'line',
-            ]);
+            // No transform provided so do nothing
+            return null;
         }
 
         // Look up asset transform handle
